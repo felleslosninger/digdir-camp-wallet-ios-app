@@ -17,7 +17,7 @@
                BlueprintIdentifier = "F14907B72ABAF54B00DDFE56"
                BuildableName = "EudiWallet.app"
                BlueprintName = "EudiWallet"
-               ReferencedContainer = "container:DigDirCamperWallet.xcodeproj">
+               ReferencedContainer = "container:EudiReferenceWallet.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -51,7 +51,7 @@
             BlueprintIdentifier = "F14907B72ABAF54B00DDFE56"
             BuildableName = "EudiWallet.app"
             BlueprintName = "EudiWallet"
-            ReferencedContainer = "container:DigDirCamperWallet.xcodeproj">
+            ReferencedContainer = "container:EudiReferenceWallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -68,7 +68,7 @@
             BlueprintIdentifier = "F14907B72ABAF54B00DDFE56"
             BuildableName = "EudiWallet.app"
             BlueprintName = "EudiWallet"
-            ReferencedContainer = "container:DigDirCamperWallet.xcodeproj">
+            ReferencedContainer = "container:EudiReferenceWallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

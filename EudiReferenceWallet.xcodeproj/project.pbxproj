@@ -56,7 +56,7 @@
 		1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_dev_access2_CA.der; sourceTree = "<group>"; };
 		1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_net_access_CA.der; sourceTree = "<group>"; };
 		1FDC0F762E8296840054F0DF /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
-		9F8701C92F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = DigDirCamperWalletIDProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = EudiReferenceWalletIDProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EudiWallet.entitlements; sourceTree = "<group>"; };
 		F018D9F32D087C410015876D /* logic-storage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-storage"; path = "Modules/logic-storage"; sourceTree = "<group>"; };
 		F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = WalletDemoRelease.xcconfig; sourceTree = "<group>"; };
@@ -93,7 +93,7 @@
 			membershipExceptions = (
 				WalletIdProvider.plist,
 			);
-			target = 9F8701C82F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider */;
+			target = 9F8701C82F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -174,7 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				F14907B82ABAF54B00DDFE56 /* EudiWallet.app */,
-				9F8701C92F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider.appex */,
+				9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -235,9 +235,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9F8701C82F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider */ = {
+		9F8701C82F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9F8701D72F6BE5BC00A865A9 /* Build configuration list for PBXNativeTarget "DigDirCamperWalletIDProvider" */;
+			buildConfigurationList = 9F8701D72F6BE5BC00A865A9 /* Build configuration list for PBXNativeTarget "EudiReferenceWalletIDProvider" */;
 			buildPhases = (
 				9F8701C52F6BE5BC00A865A9 /* Sources */,
 				9F8701C62F6BE5BC00A865A9 /* Frameworks */,
@@ -250,7 +250,7 @@
 			fileSystemSynchronizedGroups = (
 				9F8701CA2F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */,
 			);
-			name = DigDirCamperWalletIDProvider;
+			name = EudiReferenceWalletIDProvider;
 			packageProductDependencies = (
 				9F8701DD2F6BE79B00A865A9 /* DcApi18013AnnexC */,
 				9F8702002F6C41ED00A865A9 /* logic-business */,
@@ -260,7 +260,7 @@
 				9F8702292F6D55C700A865A9 /* logic-core */,
 			);
 			productName = EudiReferenceWalletIDProvider;
-			productReference = 9F8701C92F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider.appex */;
+			productReference = 9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */;
 			productType = "com.apple.product-type.extensionkit-extension";
 		};
 		F14907B72ABAF54B00DDFE56 /* EudiWallet */ = {
@@ -303,7 +303,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F14907B32ABAF54B00DDFE56 /* Build configuration list for PBXProject "DigDirCamperWallet" */;
+			buildConfigurationList = F14907B32ABAF54B00DDFE56 /* Build configuration list for PBXProject "EudiReferenceWallet" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -320,7 +320,7 @@
 			projectRoot = "";
 			targets = (
 				F14907B72ABAF54B00DDFE56 /* EudiWallet */,
-				9F8701C82F6BE5BC00A865A9 /* DigDirCamperWalletIDProvider */,
+				9F8701C82F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider */,
 			);
 		};
 /* End PBXProject section */
@@ -1222,7 +1222,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9F8701D72F6BE5BC00A865A9 /* Build configuration list for PBXNativeTarget "DigDirCamperWalletIDProvider" */ = {
+		9F8701D72F6BE5BC00A865A9 /* Build configuration list for PBXNativeTarget "EudiReferenceWalletIDProvider" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9F8701D22F6BE5BC00A865A9 /* Debug Dev */,
@@ -1233,7 +1233,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Release Demo";
 		};
-		F14907B32ABAF54B00DDFE56 /* Build configuration list for PBXProject "DigDirCamperWallet" */ = {
+		F14907B32ABAF54B00DDFE56 /* Build configuration list for PBXProject "EudiReferenceWallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F14907DA2ABAF55000DDFE56 /* Debug Dev */,
