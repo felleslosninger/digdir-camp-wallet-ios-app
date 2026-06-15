@@ -235,6 +235,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
     300
   }
 
+    //dummy commeny
   var documentIssuanceConfig: DocumentIssuanceConfig {
     return switch configLogic.appBuildVariant {
     case .DEMO:
