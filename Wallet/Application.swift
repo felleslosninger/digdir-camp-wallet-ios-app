@@ -22,6 +22,8 @@ struct Application: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   @Environment(\.scenePhase) var scenePhase
 
+    
+  // Dummy comment
   @State var blurType: BlurType = .none
   @State var toolbarConfig: UIConfig.ToolBar = .init(Theme.shared.color.secondaryLabel)
 
