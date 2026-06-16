@@ -28,8 +28,6 @@ struct Application: App {
   private let routerHost: RouterHost
   private let deepLinkController: DeepLinkController
   private let walletKitController: WalletKitController
-    
-    ///pwefhoiwøef  wurbøog wru
 
   init() {
 
