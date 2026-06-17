@@ -838,7 +838,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F1CACAE12AC3098C00B40DED /* WalletDemo.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon3;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconAltPaa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -947,7 +947,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F02921612B8E07870076A58B /* WalletDemoRelease.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon3;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconAltPaa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EudiWallet.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
