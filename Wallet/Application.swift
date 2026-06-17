@@ -16,6 +16,7 @@
 import SwiftUI
 import logic_assembly
 
+//test
 @main
 struct Application: App {
 
