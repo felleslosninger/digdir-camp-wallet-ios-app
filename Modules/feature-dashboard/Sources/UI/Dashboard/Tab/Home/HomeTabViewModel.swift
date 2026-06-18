@@ -50,7 +50,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
         username: nil,
         contentHeaderConfig: .init(
           appIconAndTextData: AppIconAndTextData(
-            appIcon: ThemeManager.shared.image.logoEuDigitalIndentityWallet
+            appIcon: ThemeManager.shared.image.loadedHotDog
           )
         ),
         phase: .active,
