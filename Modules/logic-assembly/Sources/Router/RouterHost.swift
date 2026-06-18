@@ -127,6 +127,19 @@ final class RouterHostImpl: RouterHost {
     pathElements.contains(where: { $0.info.key == route.info.key })
   }
 
+  var canSwipeBack: Bool {
+    let previousRoute = pathElements.count >= 2
+      ? pathElements[pathElements.count - 2]
+      : nil
+    guard let previous = previousRoute else { return false }
+    switch previous {
+    case .featureCommonModule(.quickPin(_)), .featureCommonModule(.biometry(_)):
+      return false
+    default:
+      return true
+    }
+  }
+
   public func composeApplication() -> AnyView {
     RouterContainerView(host: self).eraseToAnyView()
   }
@@ -206,6 +219,16 @@ private extension RouterHostImpl {
         host.resolveView(host.rootRoute)
           .navigationDestination(for: AppRoute.self) { route in
             host.resolveView(route)
+              .gesture(
+                DragGesture()
+                  .onEnded { value in
+                    if host.canSwipeBack,
+                       value.translation.width > 100,
+                       abs(value.translation.height) < 80 {
+                      host.pop()
+                    }
+                  }
+              )
           }
       }
     }
