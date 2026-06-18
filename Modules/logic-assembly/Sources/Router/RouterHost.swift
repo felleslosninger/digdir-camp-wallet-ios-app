@@ -222,7 +222,6 @@ private extension RouterHostImpl {
                 DragGesture()
                   .onEnded { value in
                     let isEdgeBackSwipe =
-                      //value.startLocation.x < 50 &&
                       value.translation.width > 50   &&
                       abs(value.translation.height) < 80
 
