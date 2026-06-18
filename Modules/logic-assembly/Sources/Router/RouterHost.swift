@@ -127,11 +127,10 @@ final class RouterHostImpl: RouterHost {
     pathElements.contains(where: { $0.info.key == route.info.key })
   }
 
-  var canSwipeBack: Bool {
-    let previousRoute = pathElements.count >= 2
-      ? pathElements[pathElements.count - 2]
-      : nil
-    guard let previous = previousRoute else { return false }
+  @MainActor
+  private var canSwipeBack: Bool {
+    guard pathElements.count >= 2 else { return false }
+    let previous = pathElements[pathElements.count - 2]
     switch previous {
     case .featureCommonModule(.quickPin(_)), .featureCommonModule(.biometry(_)):
       return false
@@ -219,12 +218,15 @@ private extension RouterHostImpl {
         host.resolveView(host.rootRoute)
           .navigationDestination(for: AppRoute.self) { route in
             host.resolveView(route)
-              .gesture(
+              .simultaneousGesture(
                 DragGesture()
                   .onEnded { value in
-                    if host.canSwipeBack,
-                       value.translation.width > 100,
-                       abs(value.translation.height) < 80 {
+                    let isEdgeBackSwipe =
+                      value.startLocation.x < 20 &&
+                      value.translation.width > 100 &&
+                      abs(value.translation.height) < 80
+
+                    if host.canSwipeBack && isEdgeBackSwipe {
                       host.pop()
                     }
                   }
