@@ -31,6 +31,12 @@
 	<string>$(CORE_USER_AUTH)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Appen trenger tilgang til lokalnettverket for å kommunisere med en lokal testutsteder.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_https._tcp</string>
+	</array>
 	<key>Team ID</key>
 	<string>$(APP_TEAM_ID)</string>
 </dict>

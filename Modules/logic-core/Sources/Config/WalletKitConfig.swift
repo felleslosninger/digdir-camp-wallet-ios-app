@@ -107,7 +107,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
         return [
           .init(
             config: .init(
-              credentialIssuerURL: "https://utsteder.test.eidas2sandkasse.net/pid",
+              credentialIssuerURL: "https://10.170.204.247:5443",
               clientId: "demo-lommebok-test",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,
@@ -172,7 +172,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
             "eidas2sandkasse_dev_access2_CA"
         ]
     }
-      
+
     return certificates
       .compactMap { loadCertificate($0) }
       .map { [$0] }

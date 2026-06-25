@@ -13,6 +13,45 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 
 ----
 
+## Phishing-resistent varsling (Digdir Camp-prototype)
+
+> **Branch:** `fridabranchen`
+
+### Hva er gjort
+
+Prototypen utforsker om digital lommebok kan brukes som en phishing-resistent varslingskanal fra offentlig sektor. Konseptet utnytter eksisterende revocation-infrastruktur (statusliste) til å sende varsler til lommebokbrukere.
+
+**Implementert i appen:**
+- `NotificationWorkManager` ([`Modules/logic-core/Sources/Worker/NotificationWorkManager.swift`](Modules/logic-core/Sources/Worker/NotificationWorkManager.swift)) – bakgrunnsjobb som poller statuslisten hvert 5. minutt. Når et bevis får status `suspended` tolkes det som "du har en melding fra denne etaten".
+- Varselsbanner på hjem-skjermen med rød dott for uleste varsler og badge-telling for flere varsler.
+- Sheet med meldingsdetaljer (tittel, brødtekst, dato og "Gå til etat"-knapp) som glir opp når brukeren trykker på banneret.
+- Varsler lagres i UserDefaults og utløper etter 30 dager. Leste varsler beholder sin synlighet til brukeren sletter dem manuelt.
+- Debug-knapp ("Test varsel") på hjem-skjermen for å simulere et varsel uten issuer.
+
+**Lokal issuer (separat repo):**
+Se [`digdir-camp-local-issuer`](https://github.com/eu-digital-identity-wallet/digdir-camp-local-issuer) for oppsett. Konfig-endringer som er gjort for å peke mot lokal statusliste:
+- `revocation.take_url` og `revocation.set_url` peker på `host.docker.internal:8080`
+- `SERVICE_URL` i `docker-compose.yml` peker på maskinens IP-adresse
+
+### Hva gjenstår / kjente problemer
+
+1. **Lokal issuer bruker ekstern statusliste** – bevis utstedt fra lokal issuer (`localhost:6007`) peker fortsatt på `issuer.eudiw.dev`-statuslisten. Trolig en konfig-feil som må debugges videre.
+
+2. **Lokal nettverkstilgang på iPhone** – appen trenger eksplisitt tillatelse til å nå `10.170.204.x:5443`. `NSLocalNetworkUsageDescription` er lagt til i `Wallet.plist`, men popup-en dukker ikke alltid opp. Midlertidig løsning: gå til **Innstillinger → Personvern og sikkerhet → Lokalt nettverk** og aktiver appen manuelt.
+
+3. **Selvsignert sertifikat** – sertifikatet på den lokale issueren er selvsignert og gyldig for en spesifikk IP. Ved nettverksbytte må nytt sertifikat genereres med ny IP og installeres på testtelefonen.
+
+4. **`fetchNotificationContent` er hardkodet** – når lokal issuer er på plass og legger på et `notification_url`-claim i beviset, må [`NotificationWorkManager.swift`](Modules/logic-core/Sources/Worker/NotificationWorkManager.swift) oppdateres til å faktisk hente tekst fra den URL-en.
+
+### Neste steg
+
+- Få lokal issuer til å registrere statusliste-URI mot `localhost:8080`
+- Sett bevisstatus til `suspended` via curl og bekreft at appen viser varselet automatisk
+- Bytte hardkodet meldingstekst med `notification_url`-claim fra beviset
+- Vurdere push-varsel (silent push via APNs) som erstatning for polling
+
+---
+
 ## Table of contents
 
 * [Overview](#overview)

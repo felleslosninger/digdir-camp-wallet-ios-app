@@ -24,6 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private lazy var analyticsController: AnalyticsController = DIGraph.shared.resolver.force(AnalyticsController.self)
   private lazy var revocationWorkManager: RevocationWorkManager = DIGraph.shared.resolver.force(RevocationWorkManager.self)
   private lazy var reIssuanceWorkManager: ReIssuanceWorkManager = DIGraph.shared.resolver.force(ReIssuanceWorkManager.self)
+  private lazy var notificationWorkManager: NotificationWorkManager = DIGraph.shared.resolver.force(NotificationWorkManager.self)
 
   func application(
     _ application: UIApplication,
@@ -63,5 +64,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private func initializeWorkers() {
     Task { await revocationWorkManager.start() }
     Task { await reIssuanceWorkManager.start() }
+    Task {
+      await notificationWorkManager.start()
+      try? await Task.sleep(seconds: 5)
+      await notificationWorkManager.printStatusIdentifiers()
+    }
   }
 }

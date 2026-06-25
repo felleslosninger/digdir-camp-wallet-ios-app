@@ -73,10 +73,10 @@ struct ConfigLogicImpl: ConfigLogic {
 
     var buildDateString: String {
         let executableURL = Bundle.main.bundleURL.appendingPathComponent(Bundle.main.object(forInfoDictionaryKey: "CFBundleExecutable") as? String ?? "")
-        
+
         if let attributes = try? FileManager.default.attributesOfItem(atPath: executableURL.path),
          let creationDate = attributes[.creationDate] as? Date {
-          
+
           let formatter = DateFormatter()
           formatter.dateFormat = "dd.MM.yy" // Format: 12.06.26
           return formatter.string(from: creationDate)

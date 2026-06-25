@@ -32,10 +32,15 @@ struct HomeTabView<Router: RouterHost>: View {
       viewState: viewModel.viewState,
       isAuthenticateAlertShowing: $viewModel.isAuthenticateAlertShowing,
       isSignDocumentAlertShowing: $viewModel.isSignDocumentAlertShowing,
+      oldestUnread: viewModel.oldestUnread,
+      unreadCount: viewModel.unreadCount,
       toggleAuthenticateAlert: { viewModel.toggleAuthenticateAlert() },
       toggleAuthenticateModal: { viewModel.toggleAuthenticateModal() },
       openSignDocument: { viewModel.openSignDocument() },
-      toggleSignDocumentAlert: { viewModel.toggleSignDocumentAlert() }
+      toggleSignDocumentAlert: { viewModel.toggleSignDocumentAlert() },
+      onMarkRead: { viewModel.markAsRead(id: $0) },
+      onDismiss: { viewModel.dismiss(id: $0) },
+      onAddTestNotification: { viewModel.addTestNotification() }
     )
     .confirmationDialog(
       .authenticate,
@@ -92,10 +97,16 @@ private struct HomeTabViewContainer: View {
   let viewState: HomeTabState
   @Binding var isAuthenticateAlertShowing: Bool
   @Binding var isSignDocumentAlertShowing: Bool
+  let oldestUnread: ActiveIssuerNotification?
+  let unreadCount: Int
+  @State private var isSheetShowing: Bool = false
   let toggleAuthenticateAlert: () -> Void
   let toggleAuthenticateModal: () -> Void
   let openSignDocument: () -> Void
   let toggleSignDocumentAlert: () -> Void
+  let onMarkRead: (String) -> Void
+  let onDismiss: (String) -> Void
+  let onAddTestNotification: () -> Void
 
   var body: some View {
     content()
@@ -115,6 +126,67 @@ private struct HomeTabViewContainer: View {
             .font(Theme.shared.font.titleMedium.font)
             .foregroundStyle(Theme.shared.color.primaryLabel)
             .accessibilityLocator(HomeTabViewLocators.userNameText)
+        }
+
+        if let notification = oldestUnread {
+          Button {
+            isSheetShowing = true
+          } label: {
+            HStack(spacing: SPACING_SMALL) {
+              ZStack(alignment: .topTrailing) {
+                Image(systemName: "bell.fill")
+                  .foregroundStyle(Theme.shared.color.accent)
+                  .font(.system(size: 20))
+                Circle()
+                  .fill(Theme.shared.color.red)
+                  .frame(width: 10, height: 10)
+                  .offset(x: 4, y: -4)
+              }
+              VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: SPACING_SMALL) {
+                  Text(notification.issuerName)
+                    .typography(Theme.shared.font.labelLarge)
+                    .foregroundStyle(Theme.shared.color.primaryLabel)
+                  if unreadCount > 1 {
+                    Text("+\(unreadCount - 1) til")
+                      .typography(Theme.shared.font.bodySmall)
+                      .foregroundStyle(Theme.shared.color.secondaryLabel)
+                  }
+                }
+                Text(notification.title)
+                  .typography(Theme.shared.font.bodyMedium)
+                  .foregroundStyle(Theme.shared.color.secondaryLabel)
+                  .lineLimit(1)
+              }
+              Spacer()
+              Image(systemName: "chevron.right")
+                .foregroundStyle(Theme.shared.color.secondaryLabel)
+                .font(.system(size: 14))
+            }
+            .padding(SPACING_MEDIUM)
+            .background(Theme.shared.color.groupedElevatedBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+              RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.shared.color.accent.opacity(0.3), lineWidth: 1)
+            )
+          }
+          .sheet(isPresented: $isSheetShowing) {
+            IssuerNotificationDetailView(
+              notification: notification,
+              onMarkRead: { onMarkRead(notification.id) },
+              onDismiss: {
+                isSheetShowing = false
+                onDismiss(notification.id)
+              }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+          }
+        }
+
+        Button("Test varsel") {
+          onAddTestNotification()
         }
 
         HomeCardView(
@@ -159,9 +231,19 @@ private struct HomeTabViewContainer: View {
     viewState: state,
     isAuthenticateAlertShowing: .constant(false),
     isSignDocumentAlertShowing: .constant(false),
+    oldestUnread: ActiveIssuerNotification(
+      issuerName: "Skatteetaten",
+      title: "Skattekortet ditt er klart",
+      body: "En arbeidsgiver har bedt om skattekortet ditt.",
+      actionURL: nil
+    ),
+    unreadCount: 2,
     toggleAuthenticateAlert: {},
     toggleAuthenticateModal: {},
     openSignDocument: {},
-    toggleSignDocumentAlert: {}
+    toggleSignDocumentAlert: {},
+    onMarkRead: { _ in },
+    onDismiss: { _ in },
+    onAddTestNotification: {}
   )
 }
