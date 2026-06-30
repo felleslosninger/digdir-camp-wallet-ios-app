@@ -857,6 +857,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Share mdoc using BLE peripheral mode";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan QR codes in web pages";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID to access stored credentials";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Appen trenger tilgang til lokalnettverket for å kommunisere med en lokal testutsteder.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -965,6 +966,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Share mdoc using BLE peripheral mode";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan QR codes in web pages";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID to access stored credentials";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Appen trenger tilgang til lokalnettverket for å kommunisere med en lokal testutsteder.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -1140,6 +1142,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Share mdoc using BLE peripheral mode";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan QR codes in web pages";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID to access stored credentials";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Appen trenger tilgang til lokalnettverket for å kommunisere med en lokal testutsteder.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -1191,6 +1194,7 @@
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Share mdoc using BLE peripheral mode";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan QR codes in web pages";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Allow Face ID to access stored credentials";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Appen trenger tilgang til lokalnettverket for å kommunisere med en lokal testutsteder.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

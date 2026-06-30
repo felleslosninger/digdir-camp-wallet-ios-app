@@ -185,10 +185,6 @@ private struct HomeTabViewContainer: View {
           }
         }
 
-        Button("Test varsel") {
-          onAddTestNotification()
-        }
-
         HomeCardView(
           text: LocalizableStringKey.authenticateAuthoriseTransactions,
           locator: HomeTabViewLocators.authenticateAuthoriseTransactions,

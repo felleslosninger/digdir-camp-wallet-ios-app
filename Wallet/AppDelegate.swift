@@ -15,6 +15,7 @@
  */
 import Foundation
 import UIKit
+import Network
 import logic_assembly
 import logic_core
 import SDWebImageSVGCoder
@@ -33,6 +34,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // Initialize Reporting
     initializeReporting()
+
+    // Trigger local network permission prompt
+    triggerLocalNetworkPermission()
 
     // Initialize Workers
     initializeWorkers()
@@ -55,6 +59,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   private func initializeReporting() {
     analyticsController.initialize()
+  }
+
+  private func triggerLocalNetworkPermission() {
+    let connection = NWConnection(host: "224.0.0.251", port: 5353, using: .udp)
+    connection.stateUpdateHandler = { _ in }
+    connection.start(queue: .main)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+      connection.cancel()
+    }
   }
 
   private func registerSvgCoderToSdImage() {

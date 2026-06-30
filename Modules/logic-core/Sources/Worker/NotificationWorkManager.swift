@@ -37,7 +37,7 @@ final actor NotificationWorkManagerImpl: NotificationWorkManager {
   private let configLogic: WalletKitConfig
   private let walletKitController: WalletKitController
 
-  private let initialDelay: TimeInterval = 30
+  private let initialDelay: TimeInterval = 15
   private let pollingIntervalSeconds: TimeInterval = 300
   private var notificationTask: Task<Void, Never>?
   private var isRunning = false
@@ -52,10 +52,15 @@ final actor NotificationWorkManagerImpl: NotificationWorkManager {
   }
 
   func start() async {
-    guard notificationTask == nil else { return }
+    guard notificationTask == nil else {
+      print("=== NOTIFICATION WORKER: allerede startet ===")
+      return
+    }
+    print("=== NOTIFICATION WORKER: starter ===")
     isRunning = true
     notificationTask = Task(priority: .userInitiated) { [weak self] in
       guard let self else { return }
+      print("=== NOTIFICATION WORKER: polling starter om \(await self.initialDelay)s ===")
       try? await Task.sleep(seconds: initialDelay)
       while await self.isRunning {
         try? await self.checkForNotifications()
@@ -93,15 +98,25 @@ final actor NotificationWorkManagerImpl: NotificationWorkManager {
 
   private func checkForNotifications() async throws {
     let issuedDocuments = await walletKitController.fetchIssuedDocuments()
+    print("=== NOTIFICATION CHECK: \(issuedDocuments.count) bevis ===")
 
     for document in issuedDocuments {
-      guard let identifier = document.statusIdentifier else { continue }
-      guard !notifiedDocumentIds.contains(document.id) else { continue }
+      guard let identifier = document.statusIdentifier else {
+        print("  Hopper over \(document.displayName.orEmpty) – ingen statusIdentifier")
+        continue
+      }
 
-      let status = try await walletKitController.getDocumentStatus(for: identifier)
+      let status: CredentialStatus
+      do {
+        status = try await walletKitController.getDocumentStatus(for: identifier)
+      } catch {
+        print("  FEIL ved statussjekk for \(document.displayName.orEmpty): \(error)")
+        continue
+      }
+      print("  \(document.displayName.orEmpty): status = \(status)")
 
-      guard status == .suspended else {
-        // If status returned to valid, allow re-notification next time it becomes suspended
+      guard status == .invalid || status == .suspended else {
+        // If status returned to valid, allow re-notification next time
         notifiedDocumentIds.remove(document.id)
         continue
       }
@@ -111,7 +126,7 @@ final actor NotificationWorkManagerImpl: NotificationWorkManager {
       // to an endpoint they control — this is what makes the channel phishing-resistant:
       // the URL was signed by the issuer at issuance time.
       let notification = await fetchNotificationContent(for: document)
-      notifiedDocumentIds.insert(document.id)
+      print("  Sender varsel: \(notification.title)")
       await notifyListeners(with: notification)
     }
   }
@@ -119,17 +134,21 @@ final actor NotificationWorkManagerImpl: NotificationWorkManager {
   private func fetchNotificationContent(for document: any DocClaimsDecodable) async -> IssuerNotification {
     // TODO: extract "notification_url" from document claims and fetch JSON from it.
     // For now, return a hardcoded placeholder so the UI flow can be tested end-to-end.
+    let urlString = document.docClaims.first(where: { $0.name == "notification_url" })?.stringValue
+    let notificationURL = urlString.flatMap { URL(string: $0) } ?? URL(string: "https://www.skatteetaten.no/person/")
+
     return IssuerNotification(
       documentId: document.id,
       issuerName: document.displayName.orEmpty,
       title: "Skattekortet ditt er klart",
       body: "En arbeidsgiver har bedt om skattekortet ditt. Logg inn på Skatteetaten for å se detaljer.",
-      actionURL: nil
+      actionURL: notificationURL
     )
   }
 
   @MainActor
   private func notifyListeners(with notification: IssuerNotification) async {
+    print("=== POSTER TIL NOTIFICATIONCENTER ===")
     NotificationCenter.default.post(
       name: NSNotification.IssuerNotificationReceived,
       object: nil,

@@ -39,7 +39,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
   var notifications: [ActiveIssuerNotification] = []
 
   var oldestUnread: ActiveIssuerNotification? {
-    notifications.first(where: { !$0.isRead })
+    notifications.first(where: { !$0.isRead }) ?? notifications.first
   }
 
   var unreadCount: Int {
@@ -72,16 +72,13 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
         pendingBleModalAction: false
       )
     )
-  }
-
-  func onCreate() async {
-    loadNotifications()
-
+    print("=== REGISTRERER OBSERVER ===")
     notificationObserver = NotificationCenter.default.addObserver(
       forName: NSNotification.IssuerNotificationReceived,
       object: nil,
       queue: .main
     ) { [weak self] notification in
+      print("=== OBSERVER MOTTOK VARSEL ===")
       let issuerName = notification.userInfo?["issuerName"] as? String ?? ""
       let title = notification.userInfo?["title"] as? String ?? ""
       let body = notification.userInfo?["body"] as? String ?? ""
@@ -92,11 +89,19 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
         body: body,
         actionURL: actionURL
       )
+      let capturedIssuerName = issuerName
+      let capturedNotification = newNotification
       Task { @MainActor [weak self] in
-        self?.notifications.append(newNotification)
-        self?.saveNotifications()
+        guard let self else { return }
+        guard !self.notifications.contains(where: { $0.issuerName == capturedIssuerName && !$0.isRead }) else { return }
+        self.notifications.append(capturedNotification)
+        self.saveNotifications()
       }
     }
+  }
+
+  func onCreate() async {
+    loadNotifications()
 
     let username = await interactor.fetchUsername()
     setState { $0.copy(username: getUserName(username)) }
