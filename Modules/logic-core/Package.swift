@@ -13,6 +13,10 @@ let package = Package(
   ],
   dependencies: [
     .package(
+         url: "https://github.com/eu-digital-identity-wallet/av-lib-ios-longfellow-zkp.git",
+         from: "0.1.0"
+       ),
+    .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-wallet-kit.git",
       exact: "0.31.2"
     ),
@@ -44,7 +48,11 @@ let package = Package(
         .product(
           name: "EudiWalletKit",
           package: "eudi-lib-ios-wallet-kit"
-        )
+        ),
+        .product(
+               name: "LongfellowZkp",
+               package: "av-lib-ios-longfellow-zkp"
+             )
       ],
       path: "./Sources"
     )

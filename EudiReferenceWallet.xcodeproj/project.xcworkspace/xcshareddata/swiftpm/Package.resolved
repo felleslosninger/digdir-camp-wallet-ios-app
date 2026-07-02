@@ -1,5 +1,5 @@
 {
-  "originHash" : "660fc54fa0f66336b905892f3d567ad983785a81978e400835568b3b2aa7a452",
+  "originHash" : "42198d003cc8d81ec00effc1333534f07fa1a560cd0142ad03cec9d285b572a8",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -35,6 +35,15 @@
       "state" : {
         "revision" : "e38d1b8b43d8b53ffadde9836f34289176bb7a0c",
         "version" : "2.7.0"
+      }
+    },
+    {
+      "identity" : "av-lib-ios-longfellow-zkp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/eu-digital-identity-wallet/av-lib-ios-longfellow-zkp.git",
+      "state" : {
+        "revision" : "a76f6980f4c7ec4a84fff38cbd3ce55f404101ac",
+        "version" : "0.14.0"
       }
     },
     {
