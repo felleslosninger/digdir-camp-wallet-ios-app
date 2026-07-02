@@ -17,6 +17,7 @@ import logic_api
 import JOSESwift
 import Foundation
 import OpenID4VCI
+import LongfellowZkp
 
 protocol WalletKitAttestationProvider: WalletAttestationsProvider {
   var baseUrl: String { get }
