@@ -151,7 +151,9 @@ final actor WalletKitControllerImpl: WalletKitController {
     }
 
     wallet = walletKit
+          LongfellowProver.setup(wallet: wallet)
   }
+    
 
   func resolveOfferUrlDocTypes(offerUri: String) async throws -> OfferedIssuanceModel {
     return try await wallet.resolveOfferUrlDocTypes(
