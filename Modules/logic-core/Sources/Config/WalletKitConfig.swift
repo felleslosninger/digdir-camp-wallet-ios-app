@@ -152,7 +152,10 @@ struct WalletKitConfigImpl: WalletKitConfig {
 
   var vpConfig: OpenId4VpConfiguration {
     .init(
-      clientIdSchemes: [.x509SanDns, .x509Hash],
+      // `.redirectUri` lar oss akseptere uautentiserte verifikatorer som identifiserer seg
+      // med `client_id: redirect_uri:...` (f.eks. verifier-backend.ageverification.dev).
+      // MERK: dette slår av verifikator-autentisering for slike forespørsler — kun for demo/test.
+      clientIdSchemes: [.x509SanDns, .x509Hash, .redirectUri],
       allowPresentingPartialClaims: true
     )
   }
