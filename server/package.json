@@ -1,0 +1,17 @@
+{
+  "name": "inbox-activation-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Prototype backend for phishing-resistent innboks: one-time PID <-> FCM-token activation.",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@parse/node-apn": "^8.1.0",
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.21.0",
+    "dotenv": "^16.4.5"
+  }
+}

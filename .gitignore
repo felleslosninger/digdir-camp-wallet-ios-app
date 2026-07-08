@@ -1,3 +1,9 @@
+### Inbox activation prototype server ###
+server/node_modules/
+server/.env
+server/*.sqlite
+server/*.sqlite-*
+
 ### Swift ###
 # Xcode
 #
@@ -91,3 +97,7 @@ xcov_output
 .DS_Store
 
 # End of https://www.toptal.com/developers/gitignore/api/swift
+### Prototype trust chain (regenerate locally, do not rely on committed keys) ###
+server/trust-chain/*-key.pem
+server/trust-chain/*.srl
+server/trust-chain/*-csr.pem

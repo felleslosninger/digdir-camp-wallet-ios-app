@@ -36,21 +36,6 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
   var isAuthenticateModalShowing: Bool = false
   var isSignDocumentAlertShowing: Bool = false
   var isBleModalShowing: Bool = false
-  var notifications: [ActiveIssuerNotification] = []
-
-  var oldestUnread: ActiveIssuerNotification? {
-    notifications.first(where: { !$0.isRead }) ?? notifications.first
-  }
-
-  var unreadCount: Int {
-    notifications.filter { !$0.isRead }.count
-  }
-
-  @ObservationIgnored
-  private var notificationObserver: NSObjectProtocol?
-
-  private let storageKey = "issuer_notifications"
-  private let expiryDays: Double = 30
 
   init(
     router: Router,
@@ -72,37 +57,9 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
         pendingBleModalAction: false
       )
     )
-    print("=== REGISTRERER OBSERVER ===")
-    notificationObserver = NotificationCenter.default.addObserver(
-      forName: NSNotification.IssuerNotificationReceived,
-      object: nil,
-      queue: .main
-    ) { [weak self] notification in
-      print("=== OBSERVER MOTTOK VARSEL ===")
-      let issuerName = notification.userInfo?["issuerName"] as? String ?? ""
-      let title = notification.userInfo?["title"] as? String ?? ""
-      let body = notification.userInfo?["body"] as? String ?? ""
-      let actionURL = notification.userInfo?["actionURL"] as? URL
-      let newNotification = ActiveIssuerNotification(
-        issuerName: issuerName,
-        title: title,
-        body: body,
-        actionURL: actionURL
-      )
-      let capturedIssuerName = issuerName
-      let capturedNotification = newNotification
-      Task { @MainActor [weak self] in
-        guard let self else { return }
-        guard !self.notifications.contains(where: { $0.issuerName == capturedIssuerName && !$0.isRead }) else { return }
-        self.notifications.append(capturedNotification)
-        self.saveNotifications()
-      }
-    }
   }
 
   func onCreate() async {
-    loadNotifications()
-
     let username = await interactor.fetchUsername()
     setState { $0.copy(username: getUserName(username)) }
     onUpdateToolbar(
@@ -193,46 +150,6 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
         .sideMenu
       )
     )
-  }
-
-  func addTestNotification() {
-    let new = ActiveIssuerNotification(
-      issuerName: "Skatteetaten",
-      title: "Skattekortet ditt er klart",
-      body: "En arbeidsgiver har bedt om skattekortet ditt. Logg inn på Skatteetaten for å se detaljer.",
-      actionURL: nil
-    )
-    notifications.append(new)
-    saveNotifications()
-  }
-
-  func markAsRead(id: String) {
-    guard let index = notifications.firstIndex(where: { $0.id == id }) else { return }
-    notifications[index].isRead = true
-    saveNotifications()
-  }
-
-  func dismiss(id: String) {
-    notifications.removeAll { $0.id == id }
-    saveNotifications()
-  }
-
-  @MainActor
-  private func loadNotifications() {
-    guard let data = UserDefaults.standard.data(forKey: storageKey),
-          let decoded = try? JSONDecoder().decode([ActiveIssuerNotification].self, from: data)
-    else { return }
-
-    let cutoff = Date().addingTimeInterval(-expiryDays * 86400)
-    notifications = decoded
-      .filter { $0.receivedAt > cutoff }
-      .sorted { $0.receivedAt < $1.receivedAt }
-  }
-
-  @MainActor
-  private func saveNotifications() {
-    guard let data = try? JSONEncoder().encode(notifications) else { return }
-    UserDefaults.standard.set(data, forKey: storageKey)
   }
 
   private func getUserName(_ username: String) -> String {

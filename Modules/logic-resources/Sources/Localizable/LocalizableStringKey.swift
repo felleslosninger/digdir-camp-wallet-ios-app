@@ -264,6 +264,12 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case documentProviderExtensionAcceptButton
   case documentProviderExtensionRejectButton
   case enterYourPin
+  case inbox
+  case inboxEmptyTitle
+  case inboxEmptyDescription
+  case inboxActivationTitle
+  case inboxActivationDescription
+  case inboxActivationButton
 }
 
 public extension LocalizableStringKey {

@@ -528,6 +528,18 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "document_provider_extension_reject_button")
     case .enterYourPin:
       bundle.localizedString(forKey: "enter_your_pin")
+    case .inbox:
+      bundle.localizedString(forKey: "inbox")
+    case .inboxEmptyTitle:
+      bundle.localizedString(forKey: "inbox_empty_title")
+    case .inboxEmptyDescription:
+      bundle.localizedString(forKey: "inbox_empty_description")
+    case .inboxActivationTitle:
+      bundle.localizedString(forKey: "inbox_activation_title")
+    case .inboxActivationDescription:
+      bundle.localizedString(forKey: "inbox_activation_description")
+    case .inboxActivationButton:
+      bundle.localizedString(forKey: "inbox_activation_button")
     }
   }
 }

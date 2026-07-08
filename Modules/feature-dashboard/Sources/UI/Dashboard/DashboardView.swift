@@ -55,8 +55,11 @@ struct DashboardView<Router: RouterHost>: View {
             viewModel.viewState.homeTab.eraseToAnyView()
           case .history:
             viewModel.viewState.historyTab.eraseToAnyView()
+          case .inbox:
+            viewModel.viewState.inboxTab.eraseToAnyView()
           }
         },
+        unreadInboxCount: viewModel.unreadInboxCount,
         revokedDocuments: viewModel.viewState.revokedDocuments,
         onDocumentDetails: { viewModel.onDocumentDetails(documentId: $0) }
       )
@@ -78,6 +81,7 @@ private struct DashboardViewContainer: View {
   @Binding var selectedTab: SelectedTab
   @Binding var isRevokedModalShowing: Bool
   let tabView: (SelectedTab) -> AnyView
+  let unreadInboxCount: Int
   let revokedDocuments: [String: String]
   let onDocumentDetails: (String) -> Void
 
@@ -139,6 +143,20 @@ private struct DashboardViewContainer: View {
           )
         }
         .tag(SelectedTab.history)
+
+      tabView(.inbox)
+        .tabItem {
+          Label(
+            .inbox,
+            systemImage: "bell.fill"
+          )
+          .accessibilityLocator(
+            TabViewLocators.inbox,
+            label: LocalizableStringKey.inbox.toString
+          )
+        }
+        .tag(SelectedTab.inbox)
+        .badge(unreadInboxCount)
     }
     .tint(Theme.shared.color.accent)
   }
@@ -182,6 +200,7 @@ private struct DashboardViewContainer: View {
       selectedTab: .constant(.home),
       isRevokedModalShowing: .constant(false),
       tabView: { _ in EmptyView().eraseToAnyView() },
+      unreadInboxCount: 0,
       revokedDocuments: [:],
       onDocumentDetails: { _ in }
     )

@@ -16,26 +16,7 @@
 import SwiftUI
 import logic_ui
 import logic_resources
-
-struct ActiveIssuerNotification: Identifiable, Codable {
-  let id: String
-  let issuerName: String
-  let title: String
-  let body: String
-  let actionURL: URL?
-  let receivedAt: Date
-  var isRead: Bool
-
-  init(issuerName: String, title: String, body: String, actionURL: URL?) {
-    self.id = UUID().uuidString
-    self.issuerName = issuerName
-    self.title = title
-    self.body = body
-    self.actionURL = actionURL
-    self.receivedAt = Date()
-    self.isRead = false
-  }
-}
+import feature_common
 
 struct IssuerNotificationDetailView: View {
 

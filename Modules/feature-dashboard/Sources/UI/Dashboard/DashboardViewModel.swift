@@ -23,6 +23,7 @@ struct DashboardState<Router: RouterHost>: ViewState {
   let homeTab: HomeTabView<Router>?
   let documentTab: DocumentTabView<Router>?
   let historyTab: TransactionTabView<Router>?
+  let inboxTab: InboxTabView<Router>?
   let toolBarContent: ToolBarContent
   let navigationTitle: LocalizableStringKey
   let revokedDocuments: [String: String]
@@ -33,6 +34,7 @@ enum SelectedTab {
   case home
   case documents
   case history
+  case inbox
 }
 
 @Observable
@@ -43,7 +45,12 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
   @ObservationIgnored
   private let deepLinkController: DeepLinkController
 
-  var selectedTab: SelectedTab = .home
+  var selectedTab: SelectedTab = .home {
+    didSet {
+      refreshUnreadInboxCount()
+    }
+  }
+  var unreadInboxCount: Int = 0
   var isRevokedModalShowing: Bool = false {
     didSet {
       debouncedIsRevokedModalShowing.send(isRevokedModalShowing)
@@ -52,6 +59,7 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
 
   @ObservationIgnored
   private var debouncedIsRevokedModalShowing = CurrentValueSubject<Bool, Never>(false)
+  private let notificationsStorageKey = "issuer_notifications"
 
   init(
     router: Router,
@@ -70,6 +78,7 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
         homeTab: nil,
         documentTab: nil,
         historyTab: nil,
+        inboxTab: nil,
         toolBarContent: .init(
           trailingActions: nil,
           leadingActions: nil
@@ -128,7 +137,18 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
 
   func onCreate() async {
     onResume()
+    refreshUnreadInboxCount()
     await handleDeepLink()
+  }
+
+  func refreshUnreadInboxCount() {
+    guard let data = UserDefaults.standard.data(forKey: notificationsStorageKey),
+          let decoded = try? JSONDecoder().decode([ActiveIssuerNotification].self, from: data)
+    else {
+      unreadInboxCount = 0
+      return
+    }
+    unreadInboxCount = decoded.filter { !$0.isRead }.count
   }
 
   private func onResume() {
@@ -198,6 +218,14 @@ final class DashboardViewModel<Router: RouterHost>: ViewModel<Router, DashboardS
           with: .init(
             router: router,
             interactor: transactionTabInteractor,
+            onUpdateToolbar: { toolbar, title in
+              updateState(toolbar: toolbar, title: title)
+            }
+          )
+        ),
+        inboxTab: InboxTabView(
+          with: .init(
+            router: router,
             onUpdateToolbar: { toolbar, title in
               updateState(toolbar: toolbar, title: title)
             }

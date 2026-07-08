@@ -19,6 +19,7 @@ public enum TabViewLocators: String, LocatorType {
   case home
   case documents
   case history
+  case inbox
 
   public var id: String {
     switch self {
@@ -28,6 +29,8 @@ public enum TabViewLocators: String, LocatorType {
       return "documents_tab"
     case .history:
       return "history_tab"
+    case .inbox:
+      return "inbox_tab"
     }
   }
 
