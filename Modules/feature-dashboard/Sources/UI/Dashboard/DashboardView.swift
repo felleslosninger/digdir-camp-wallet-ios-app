@@ -22,7 +22,6 @@ import feature_common
 struct DashboardView<Router: RouterHost>: View {
 
   @Environment(\.scenePhase) private var scenePhase
-  @AppStorage("inboxUnreadCount") private var inboxUnreadCount: Int = 0
 
   @State private var viewModel: DashboardViewModel<Router>
 
@@ -62,16 +61,12 @@ struct DashboardView<Router: RouterHost>: View {
       DashboardViewContainer(
         selectedTab: $viewModel.selectedTab,
         isRevokedModalShowing: $viewModel.isRevokedModalShowing,
-        inboxUnreadCount: inboxUnreadCount,
         tabView: { tab in
           switch tab {
           case .documents:
             viewModel.viewState.documentTab.eraseToAnyView()
           case .home:
             viewModel.viewState.homeTab.eraseToAnyView()
-          case .inbox:
-            InboxTabView()
-              .eraseToAnyView()
           case .history:
             viewModel.viewState.historyTab.eraseToAnyView()
           case .inbox:
@@ -100,7 +95,6 @@ private struct DashboardViewContainer: View {
   @Binding var selectedTab: SelectedTab
   @Binding var isRevokedModalShowing: Bool
 
-  let inboxUnreadCount: Int
   let tabView: (SelectedTab) -> AnyView
   let unreadInboxCount: Int
   let revokedDocuments: [String: String]
@@ -155,12 +149,12 @@ private struct DashboardViewContainer: View {
       tabView(.inbox)
         .tabItem {
           Label {
-            Text("Innboks")
+            Text(.inbox)
           } icon: {
             ZStack(alignment: .topTrailing) {
               Image(systemName: "tray.full.fill")
 
-              if inboxUnreadCount > 0 {
+              if unreadInboxCount > 0 {
                 Circle()
                   .fill(Color.blue)
                   .frame(width: 8, height: 8)
@@ -170,7 +164,7 @@ private struct DashboardViewContainer: View {
           }
           .accessibilityLocator(
             TabViewLocators.inbox,
-            label: "Innboks"
+            label: LocalizableStringKey.inbox.toString
           )
         }
         .tag(SelectedTab.inbox)
@@ -187,20 +181,6 @@ private struct DashboardViewContainer: View {
           )
         }
         .tag(SelectedTab.history)
-
-      tabView(.inbox)
-        .tabItem {
-          Label(
-            .inbox,
-            systemImage: "bell.fill"
-          )
-          .accessibilityLocator(
-            TabViewLocators.inbox,
-            label: LocalizableStringKey.inbox.toString
-          )
-        }
-        .tag(SelectedTab.inbox)
-        .badge(unreadInboxCount)
     }
     .tint(Theme.shared.color.accent)
   }
@@ -243,7 +223,6 @@ private struct DashboardViewContainer: View {
     DashboardViewContainer(
       selectedTab: .constant(.home),
       isRevokedModalShowing: .constant(false),
-      inboxUnreadCount: 0,
       tabView: { _ in EmptyView().eraseToAnyView() },
       unreadInboxCount: 0,
       revokedDocuments: [:],
