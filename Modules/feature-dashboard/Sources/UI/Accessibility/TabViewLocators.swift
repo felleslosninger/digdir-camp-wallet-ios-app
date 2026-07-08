@@ -38,3 +38,4 @@ public enum TabViewLocators: String, LocatorType {
     .isTabBar
   }
 }
+
