@@ -16,22 +16,26 @@
 import logic_ui
 
 public enum TabViewLocators: String, LocatorType {
-  case home
-  case documents
-  case history
+    case home
+    case documents
+    case inbox
+    case history
 
-  public var id: String {
-    switch self {
-    case .home:
-      return "home_tab"
-    case .documents:
-      return "documents_tab"
-    case .history:
-      return "history_tab"
+    public var id: String {
+        switch self {
+        case .home:
+            return "home_tab"
+        case .documents:
+            return "documents_tab"
+        case .inbox:
+            return "inbox_tab"
+        case .history:
+            return "history_tab"
+        }
     }
-  }
 
-  public var trait: AccessibilityTraits? {
-    .isTabBar
-  }
+    public var trait: AccessibilityTraits? {
+        .isTabBar
+    }
 }
+

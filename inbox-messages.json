@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "senderCn": "Statens vegvesen",
+    "subject": "Førerretten din er oppdatert",
+    "body": "Det har skjedd en endring i førerretten din. Varselet er verifisert mot tillitslisten.",
+    "sentAt": "I dag",
+    "status": "levert"
+  },
+  {
+    "id": "2",
+    "senderCn": "Lånekassen",
+    "subject": "Ny melding om søknaden din",
+    "body": "Søknaden din er behandlet. Avsender og meldingsstatus er kontrollert i lommeboken.",
+    "sentAt": "I går",
+    "status": "levert"
+  },
+  {
+    "id": "3",
+    "senderCn": "NAV",
+    "subject": "Tidligere varsel er tilbakekalt",
+    "body": "Dette varselet er tilbakekalt eller erstattet av en nyere versjon.",
+    "sentAt": "27. juni",
+    "status": "levert"
+  },
+  {
+    "id": "4",
+    "senderCn": "Skatteetaten",
+    "subject": "Varsel er utløpt",
+    "body": "Dette varselet er ikke lenger gyldig.",
+    "sentAt": "25. juni",
+    "status": "lest"
+  },
+  {
+    "id": "5",
+    "senderCn": "Husbanken",
+    "subject": "Denne meldingen er ikke levert",
+    "body": "Denne meldingen skal ikke vises i brukerens innboks.",
+    "sentAt": "24. juni",
+    "status": "ulevert"
+  }
+]

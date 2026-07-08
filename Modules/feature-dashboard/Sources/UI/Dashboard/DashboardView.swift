@@ -13,6 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import SwiftUI
 import logic_ui
 import logic_resources
@@ -21,8 +22,22 @@ import feature_common
 struct DashboardView<Router: RouterHost>: View {
 
   @Environment(\.scenePhase) private var scenePhase
+  @AppStorage("inboxUnreadCount") private var inboxUnreadCount: Int = 0
 
   @State private var viewModel: DashboardViewModel<Router>
+
+  private var currentNavigationTitle: LocalizableStringKey {
+    switch viewModel.selectedTab {
+    case .home:
+      return .home
+    case .documents:
+      return .documents
+    case .inbox:
+      return .custom("Innboks")
+    case .history:
+      return .historyTitle
+    }
+  }
 
   public init(with viewModel: DashboardViewModel<Router>) {
     self._viewModel = State(wrappedValue: viewModel)
@@ -32,7 +47,7 @@ struct DashboardView<Router: RouterHost>: View {
     ContentScreenView(
       padding: .zero,
       canScroll: false,
-      navigationTitle: viewModel.viewState.navigationTitle,
+      navigationTitle: currentNavigationTitle,
       toolbarContent: viewModel.viewState.toolBarContent,
       notificationActions: [
         .init(
@@ -47,12 +62,16 @@ struct DashboardView<Router: RouterHost>: View {
       DashboardViewContainer(
         selectedTab: $viewModel.selectedTab,
         isRevokedModalShowing: $viewModel.isRevokedModalShowing,
+        inboxUnreadCount: inboxUnreadCount,
         tabView: { tab in
           switch tab {
           case .documents:
             viewModel.viewState.documentTab.eraseToAnyView()
           case .home:
             viewModel.viewState.homeTab.eraseToAnyView()
+          case .inbox:
+            InboxTabView()
+              .eraseToAnyView()
           case .history:
             viewModel.viewState.historyTab.eraseToAnyView()
           }
@@ -77,6 +96,8 @@ private struct DashboardViewContainer: View {
 
   @Binding var selectedTab: SelectedTab
   @Binding var isRevokedModalShowing: Bool
+
+  let inboxUnreadCount: Int
   let tabView: (SelectedTab) -> AnyView
   let revokedDocuments: [String: String]
   let onDocumentDetails: (String) -> Void
@@ -126,6 +147,29 @@ private struct DashboardViewContainer: View {
           )
         }
         .tag(SelectedTab.documents)
+
+      tabView(.inbox)
+        .tabItem {
+          Label {
+            Text("Innboks")
+          } icon: {
+            ZStack(alignment: .topTrailing) {
+              Image(systemName: "tray.full.fill")
+
+              if inboxUnreadCount > 0 {
+                Circle()
+                  .fill(Color.blue)
+                  .frame(width: 8, height: 8)
+                  .offset(x: 7, y: -5)
+              }
+            }
+          }
+          .accessibilityLocator(
+            TabViewLocators.inbox,
+            label: "Innboks"
+          )
+        }
+        .tag(SelectedTab.inbox)
 
       tabView(.history)
         .tabItem {
@@ -181,6 +225,7 @@ private struct DashboardViewContainer: View {
     DashboardViewContainer(
       selectedTab: .constant(.home),
       isRevokedModalShowing: .constant(false),
+      inboxUnreadCount: 0,
       tabView: { _ in EmptyView().eraseToAnyView() },
       revokedDocuments: [:],
       onDocumentDetails: { _ in }

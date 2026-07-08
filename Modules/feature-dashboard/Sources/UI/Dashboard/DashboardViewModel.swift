@@ -30,9 +30,10 @@ struct DashboardState<Router: RouterHost>: ViewState {
 }
 
 enum SelectedTab {
-  case home
-  case documents
-  case history
+    case home
+    case documents
+    case inbox
+    case history
 }
 
 @Observable
