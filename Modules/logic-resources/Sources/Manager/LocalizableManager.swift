@@ -240,6 +240,8 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "items_not_found_in_storage")
     case .home:
       bundle.localizedString(forKey: "home")
+    case .verify:
+        bundle.localizedString(forKey: "verify")
     case .historyTitle:
       bundle.localizedString(forKey: "history")
     case .documents:
@@ -330,6 +332,8 @@ final class LocalizableManager: LocalizableManagerType {
       bundle.localizedString(forKey: "no_results_transactions_description")
     case .proximityConnectionBleDescription:
       bundle.localizedString(forKey: "proximity_connection_ble_description")
+    case .proximityConnectionNFCDescription:
+        bundle.localizedString (forKey: "or_share_via_nfc")
     case .filters:
       bundle.localizedString(forKey: "filters")
     case .sortByIssuedDateSectionTitle:

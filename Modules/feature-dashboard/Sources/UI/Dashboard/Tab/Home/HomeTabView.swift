@@ -33,57 +33,33 @@ struct HomeTabView<Router: RouterHost>: View {
       isAuthenticateAlertShowing: $viewModel.isAuthenticateAlertShowing,
       isSignDocumentAlertShowing: $viewModel.isSignDocumentAlertShowing,
       toggleAuthenticateAlert: { viewModel.toggleAuthenticateAlert() },
-      toggleAuthenticateModal: { viewModel.toggleAuthenticateModal() },
+      onInPerson: { viewModel.onShare() },
+      onOnline: { viewModel.onShowScanner() },
       openSignDocument: { viewModel.openSignDocument() },
       toggleSignDocumentAlert: { viewModel.toggleSignDocumentAlert() }
     )
-    .confirmationDialog(
-      .authenticate,
-      isPresented: $viewModel.isAuthenticateModalShowing,
-      titleVisibility: .visible
-    ) {
-      Button(.inPerson) {
-        viewModel.onShare()
-      }
-      .accessibilityLocator(HomeTabViewLocators.inPersonButton)
-
-      Button(.online) {
-        viewModel.onShowScanner()
-      }
-      .accessibilityLocator(HomeTabViewLocators.onlineButton)
-
-      if ProcessInfo.processInfo.isiOSAppOnMac {
-          Button(.cancelButton, role: .cancel) {}
-            .accessibilityLocator(HomeTabViewLocators.cancelButton)
-      } else {
-          Button(.cancelButton) {}
-            .accessibilityLocator(HomeTabViewLocators.cancelButton)
-      }
-    } message: {
-        Text(.authenticateAuthoriseTransactions)
-      .dialogCompat(
-        .bleDisabledModalTitle,
-        isPresented: $viewModel.isBleModalShowing,
-        actions: {
-          Button(.bleDisabledModalButton) {
-            viewModel.onBleSettings()
-          }
-          if !ProcessInfo.processInfo.isiOSAppOnMac {
-              Button(.cancelButton, role: .cancel) {}
-          }
-        },
-        message: {
-          Text(.bleDisabledModalCaption)
+    .dialogCompat(
+      .bleDisabledModalTitle,
+      isPresented: $viewModel.isBleModalShowing,
+      actions: {
+        Button(.bleDisabledModalButton) {
+          viewModel.onBleSettings()
         }
-      )
-      .onChange(of: scenePhase) {
-        self.viewModel.setPhase(with: scenePhase)
+        if !ProcessInfo.processInfo.isiOSAppOnMac {
+            Button(.cancelButton, role: .cancel) {}
+        }
+      },
+      message: {
+        Text(.bleDisabledModalCaption)
       }
-      .task {
-        await viewModel.onCreate()
-      }
-      .background(Theme.shared.color.background)
+    )
+    .onChange(of: scenePhase) {
+      self.viewModel.setPhase(with: scenePhase)
     }
+    .task {
+      await viewModel.onCreate()
+    }
+    .background(Theme.shared.color.background)
   }
 }
 
@@ -93,7 +69,8 @@ private struct HomeTabViewContainer: View {
   @Binding var isAuthenticateAlertShowing: Bool
   @Binding var isSignDocumentAlertShowing: Bool
   let toggleAuthenticateAlert: () -> Void
-  let toggleAuthenticateModal: () -> Void
+  let onInPerson: () -> Void
+  let onOnline: () -> Void
   let openSignDocument: () -> Void
   let toggleSignDocumentAlert: () -> Void
 
@@ -104,41 +81,51 @@ private struct HomeTabViewContainer: View {
   @MainActor
   @ViewBuilder
   private func content() -> some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
-        ContentHeaderView(
-          config: viewState.contentHeaderConfig
-        )
+    VStack(alignment: .leading, spacing: SPACING_MEDIUM) {
+      ContentHeaderView(
+        config: viewState.contentHeaderConfig
+      )
+      .padding(.horizontal, SPACING_MEDIUM)
 
-        if let username = viewState.username {
-          Text(.welcomeBack([username]))
-            .font(Theme.shared.font.titleMedium.font)
-            .foregroundStyle(Theme.shared.color.primaryLabel)
-            .accessibilityLocator(HomeTabViewLocators.userNameText)
-        }
+      Text(.authenticateAuthoriseTransactions)
+        .typography(Theme.shared.font.bodyLarge)
+        .foregroundStyle(Theme.shared.color.primaryLabel)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(SPACING_MEDIUM)
+        .background(Theme.shared.color.groupedBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.shared.shape.small))
+        .padding(.horizontal, SPACING_MEDIUM)
 
-        HomeCardView(
-          text: LocalizableStringKey.authenticateAuthoriseTransactions,
-          locator: HomeTabViewLocators.authenticateAuthoriseTransactions,
-          buttonText: LocalizableStringKey.authenticate,
-          illustration: Theme.shared.image.homeIdentity,
-          learnMoreText: LocalizableStringKey.learnMore,
-          learnMoreAction: {
-            toggleAuthenticateAlert()
-          },
-          action: toggleAuthenticateModal()
-        )
-        .alertView(
-          isPresented: $isAuthenticateAlertShowing,
-          title: .alertAccessOnlineServices,
-          message: .alertAccessOnlineServicesMessage,
-          actions: {
-            Button(.okButton, role: .cancel) {}
-          }
-        )
-      }
+      WrapButtonView(
+        title: .inPerson,
+        onAction: onInPerson()
+      )
+      .padding(.horizontal, SPACING_MEDIUM)
+
+      WrapButtonView(
+        title: .online,
+        onAction: onOnline()
+      )
+      .padding(.horizontal, SPACING_MEDIUM)
+
+      Spacer()
+
+      WrapButtonView(
+        title: .learnMore,
+        textColor: Theme.shared.color.accent,
+        backgroundColor: .clear,
+        onAction: toggleAuthenticateAlert()
+      )
       .padding(.horizontal, SPACING_MEDIUM)
       .padding(.bottom, SPACING_MEDIUM)
+      .alertView(
+        isPresented: $isAuthenticateAlertShowing,
+        title: .alertAccessOnlineServices,
+        message: .alertAccessOnlineServicesMessage,
+        actions: {
+          Button(.okButton, role: .cancel) {}
+        }
+      )
     }
     .background(Theme.shared.color.background)
   }
@@ -160,7 +147,8 @@ private struct HomeTabViewContainer: View {
     isAuthenticateAlertShowing: .constant(false),
     isSignDocumentAlertShowing: .constant(false),
     toggleAuthenticateAlert: {},
-    toggleAuthenticateModal: {},
+    onInPerson: {},
+    onOnline: {},
     openSignDocument: {},
     toggleSignDocumentAlert: {}
   )

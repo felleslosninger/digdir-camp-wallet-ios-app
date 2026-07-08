@@ -314,6 +314,7 @@
 			mainGroup = F14907AF2ABAF54B00DDFE56;
 			packageReferences = (
 				9F8701DC2F6BE79B00A865A9 /* XCRemoteSwiftPackageReference "av-lib-ios-w3c-dc-api" */,
+				0A89508E2FFD1F76009A4A65 /* XCRemoteSwiftPackageReference "av-lib-ios-longfellow-zkp" */,
 			);
 			productRefGroup = F14907B92ABAF54B00DDFE56 /* Products */;
 			projectDirPath = "";
@@ -1258,6 +1259,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		0A89508E2FFD1F76009A4A65 /* XCRemoteSwiftPackageReference "av-lib-ios-longfellow-zkp" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/eu-digital-identity-wallet/av-lib-ios-longfellow-zkp";
+			requirement = {
+				kind = exactVersion;
+				version = 0.14.0;
+			};
+		};
 		9F8701DC2F6BE79B00A865A9 /* XCRemoteSwiftPackageReference "av-lib-ios-w3c-dc-api" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eu-digital-identity-wallet/av-lib-ios-w3c-dc-api.git";

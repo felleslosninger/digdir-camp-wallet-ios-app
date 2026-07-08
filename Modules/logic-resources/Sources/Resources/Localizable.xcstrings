@@ -128,7 +128,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Authenticate, authorise transactions and share your digital documentsin person or online."
+            "value" : "Authenticate, authorise transactions and share your digital documents in person or online."
           }
         }
       }
@@ -2632,6 +2632,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Valid until %@"
+          }
+        }
+      }
+    },
+    "verify" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify"
           }
         }
       }

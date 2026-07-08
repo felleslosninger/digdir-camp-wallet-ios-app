@@ -125,6 +125,14 @@ private struct DocumentTabViewContainer: View {
   @ViewBuilder
   private func content() -> some View {
     VStack {
+      if let username = state.username {
+        Text(.welcomeBack([username]))
+          .font(Theme.shared.font.titleMedium.font)
+          .foregroundStyle(Theme.shared.color.primaryLabel)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, SPACING_MEDIUM)
+          .padding(.top, SPACING_MEDIUM)
+      }
       if state.documents.isEmpty && !searchQuery.isEmpty {
         ContentUnavailableView(
           title: .noResults,
@@ -228,7 +236,8 @@ private struct DocumentTabViewContainer: View {
     pendingDeletionDocument: nil,
     succededIssuedDocuments: [],
     failedDocuments: [],
-    hasDefaultFilters: false
+    hasDefaultFilters: false,
+    username: nil
   )
   DocumentTabViewContainer(
     state: state,

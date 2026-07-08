@@ -54,6 +54,7 @@ public enum DeferredPartialState: Sendable {
 }
 
 public protocol DocumentTabInteractor: Sendable {
+  func fetchUsername() async -> String
   func fetchDocuments(failedDocuments: [String], shouldRefreshCounters: Bool) async -> DocumentsPartialState
   func hasDeferredDocuments() async -> Bool
   func deleteDeferredDocument(with id: String) async -> DeleteDeferredPartialState
@@ -67,6 +68,10 @@ public protocol DocumentTabInteractor: Sendable {
   func updateFilters(sectionID: String, filterID: String) async
   func updateLists(filterableList: FilterableList) async
   func addDynamicFilters(documents: FilterableList, filters: Filters) async -> Filters
+}
+
+public extension DocumentTabInteractor {
+  func fetchUsername() async -> String { "" }
 }
 
 final actor DocumentTabInteractorImpl: DocumentTabInteractor {
@@ -92,6 +97,11 @@ final actor DocumentTabInteractorImpl: DocumentTabInteractor {
 
   deinit {
     filtersStateAsync?.finish()
+  }
+
+  func fetchUsername() async -> String {
+    let name = await walletKitController.fetchMainPidDocument()?.getBearersName()?.first
+    return name.orEmpty
   }
 
   func hasDeferredDocuments() async -> Bool {

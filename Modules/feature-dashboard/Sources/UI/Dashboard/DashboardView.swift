@@ -104,12 +104,12 @@ private struct DashboardViewContainer: View {
       tabView(.home)
         .tabItem {
           Label(
-            LocalizableStringKey.home.toString,
-            systemImage: "house.fill"
+            LocalizableStringKey.verify.toString,
+            systemImage: "checkmark.shield.fill"
           )
           .accessibilityLocator(
             TabViewLocators.home,
-            label: LocalizableStringKey.home.toString
+            label: "Verify"
           )
         }
         .tag(SelectedTab.home)
@@ -117,12 +117,12 @@ private struct DashboardViewContainer: View {
       tabView(.documents)
         .tabItem {
           Label(
-            .documents,
-            systemImage: "doc.fill"
+            .home,
+            systemImage: "house.fill"
           )
           .accessibilityLocator(
             TabViewLocators.documents,
-            label: LocalizableStringKey.documents.toString
+            label: LocalizableStringKey.home.toString
           )
         }
         .tag(SelectedTab.documents)

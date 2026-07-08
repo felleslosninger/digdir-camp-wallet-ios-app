@@ -29,6 +29,7 @@ struct DocumentTabState: ViewState {
   let succededIssuedDocuments: [DocumentTabUIModel]
   let failedDocuments: [String]
   let hasDefaultFilters: Bool
+  let username: String?
 
   var pendingDocumentTitle: String {
     pendingDeletionDocument?.value.title ?? ""
@@ -91,7 +92,8 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
         pendingDeletionDocument: nil,
         succededIssuedDocuments: [],
         failedDocuments: [],
-        hasDefaultFilters: true
+        hasDefaultFilters: true,
+        username: nil
       )
     )
 
@@ -103,6 +105,15 @@ final class DocumentTabViewModel<Router: RouterHost>: ViewModel<Router, Document
   func onAppear() {
     updateToolBar()
     fetch()
+    Task {
+      let username = await interactor.fetchUsername()
+      setState { $0.copy(username: formatUsername(username)) }
+    }
+  }
+
+  private func formatUsername(_ username: String) -> String {
+    let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? "" : ", \(trimmed)"
   }
 
   func onDisappear() {

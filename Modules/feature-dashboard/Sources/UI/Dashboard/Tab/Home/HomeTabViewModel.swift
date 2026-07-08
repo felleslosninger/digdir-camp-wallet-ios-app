@@ -74,7 +74,7 @@ final class HomeTabViewModel<Router: RouterHost>: ViewModel<Router, HomeTabState
           }
         ]
       ),
-      .home
+      .verify
     )
   }
 

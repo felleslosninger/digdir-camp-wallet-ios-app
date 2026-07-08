@@ -135,6 +135,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case itemNotFoundInStorage
   case itemsNotFoundInStorage
   case home
+  case verify
   case documents
   case historyTitle
   case authenticateAuthoriseTransactions
@@ -174,6 +175,7 @@ public enum LocalizableStringKey: Equatable, Sendable {
   case noResultsDocumentsDescription
   case noResultsTransactionsDescription
   case proximityConnectionBleDescription
+  case proximityConnectionNFCDescription
   case selectExpiryPeriod
   case filterByState
   case sortBy
