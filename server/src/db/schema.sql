@@ -48,6 +48,20 @@ CREATE TABLE IF NOT EXISTS pending_registration (
     expires_at           TEXT NOT NULL
 );
 
+-- One row per authorized sender (agency). `api_key_hash` is HMAC-SHA256 of
+-- the raw API key — the raw key is shown to the sender ONCE at creation
+-- time (see scripts/create-sender.js) and never stored or logged again.
+-- `sender_id` on a message always comes from THIS table (resolved from the
+-- authenticated key), never from the request body — otherwise any caller
+-- could claim to be "nav" just by typing it in.
+CREATE TABLE IF NOT EXISTS sender (
+    id              TEXT PRIMARY KEY,      -- uuid
+    name            TEXT NOT NULL UNIQUE,   -- e.g. "nav", "skatteetaten" — shown to the user in the app
+    api_key_hash    BLOB NOT NULL UNIQUE,
+    created_at      TEXT NOT NULL,
+    revoked_at      TEXT
+);
+
 -- Encrypted messages. `ciphertext` is opaque to us — AES-256-GCM output
 -- (includes the auth tag). `sender_ephemeral_public_key` is the one-time
 -- P-256 public key the sender generated for THIS message's ECDH exchange;

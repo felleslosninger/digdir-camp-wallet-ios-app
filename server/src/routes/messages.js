@@ -1,14 +1,27 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
+import rateLimit from 'express-rate-limit';
 import { db } from '../db/index.js';
 import { hmac, randomToken, decrypt } from '../crypto/index.js';
 import { encryptForRecipient } from '../crypto/ecies.js';
 import { rawPointToPublicKey } from '../crypto/jwk.js';
 import { sendSilentWakeUpPush } from '../push/apns.js';
+import { authenticateSender } from '../middleware/senderAuth.js';
 
 export const router = Router();
 
 const CHALLENGE_TTL_MS = 2 * 60 * 1000;
+
+// One compromised or misbehaving sender key shouldn't be able to flood
+// every recipient. Keyed per API key (not per IP) so one agency's traffic
+// never throttles another's, and a leaked key is capped in blast radius.
+const sendRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.sender.id,
+});
 
 // Sender-side (e.g. NAV's backend calls this — never the app). The sender
 // must already know the recipient's device_public_key: our /messages/key
@@ -16,11 +29,17 @@ const CHALLENGE_TTL_MS = 2 * 60 * 1000;
 // happens HERE, in the sender's trust boundary — by the time this request
 // body is built, the plaintext is already gone. Our own server only ever
 // receives ciphertext.
-router.post('/messages/send', async (req, res) => {
-  const { pid, sender_id, plaintext } = req.body || {};
-  if (!pid || !sender_id || !plaintext) {
-    return res.status(400).json({ error: 'pid, sender_id and plaintext are required' });
+//
+// `sender_id` is no longer taken from the request body — it comes from
+// whichever API key authenticated the call, so a caller can never claim to
+// be an agency it isn't. See middleware/senderAuth.js and
+// scripts/create-sender.js.
+router.post('/messages/send', authenticateSender, sendRateLimit, async (req, res) => {
+  const { pid, plaintext } = req.body || {};
+  if (!pid || !plaintext) {
+    return res.status(400).json({ error: 'pid and plaintext are required' });
   }
+  const senderId = req.sender.name;
 
   const registration = db.prepare(
     'SELECT id, device_public_key, fcm_token_encrypted, fcm_token_iv FROM inbox_registration WHERE pid_hash = ? AND revoked_at IS NULL'
@@ -41,7 +60,7 @@ router.post('/messages/send', async (req, res) => {
       (id, recipient_registration_id, sender_id, ciphertext, iv, sender_ephemeral_public_key, hkdf_salt, content_hash, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    id, registration.id, sender_id, encrypted.ciphertext, encrypted.iv,
+    id, registration.id, senderId, encrypted.ciphertext, encrypted.iv,
     encrypted.ephemeralPublicKey, encrypted.salt, contentHash, new Date().toISOString()
   );
 

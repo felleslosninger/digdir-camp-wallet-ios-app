@@ -34,6 +34,13 @@ integration here.
 
 ## Flow 2 — Fetch (retrieve + decrypt a message)
 
+0. **Authenticate the sender** — `POST /messages/send` requires
+   `Authorization: Bearer <api_key>` (`src/middleware/senderAuth.js`).
+   Provision a key with `node scripts/create-sender.js <name>` (prints the
+   raw key ONCE — only its hash is stored). `sender_id` on a stored message
+   always comes from this authenticated identity, never from the request
+   body, so no caller can claim to be an agency it isn't. Rate-limited to
+   60 requests/minute per key (`express-rate-limit`).
 1. **Send** (`POST /messages/send`) — the sender (e.g. NAV) encrypts
    client-side using ECIES: fresh ephemeral P-256 keypair → ECDH against the
    recipient's registered public key → HKDF-SHA256 → AES-256-GCM
@@ -107,5 +114,6 @@ collision — see `.env.example`.
   credential's own `cnf` claim at issuance.
 - No dedicated push-token-refresh endpoint (would sign a fresh challenge
   instead of repeating the whole key-binding ceremony).
-- No message expiry/deletion policy, no rate limiting.
-- Keys come from `.env`, not a KMS.
+- No message expiry/deletion policy.
+- Keys come from `.env`, not a KMS. Sender API keys are provisioned by
+  hand via a script, not a real onboarding/admin flow.
