@@ -57,12 +57,27 @@ integration here.
 cd server
 npm install
 cp .env.example .env   # fill in SERVER_HMAC_KEY / SERVER_AES_KEY / SERVER_SESSION_SECRET
+                        # (generate each with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
+./scripts/generate-trust-chain.sh   # REQUIRED on a fresh clone — see below
 npm start
 ```
 
 APNs push requires a real `.p8` key (see `.env.example`) — without one,
 `/messages/send` still stores the message and reports
 `"pushDelivery": "failed"` instead of losing the message.
+
+### Trust chain setup (required on a fresh clone)
+
+`server/trust-chain/*-key.pem` are gitignored on purpose — only the public
+certs are committed. Run `./scripts/generate-trust-chain.sh` once; it
+refuses to overwrite an existing chain. This generates a **new** keypair
+each time, which means it won't match the Trust Anchor already pinned in
+`Modules/feature-common/Sources/Model/OpenID4VP/TrustAnchorRegistry.swift`
+(that one matches whoever originally generated the committed certs). The
+script prints the new root cert's base64 at the end — paste it into
+`TrustAnchorRegistry.swift`'s `pinnedRootCertificatesBase64` to keep the
+app and server in sync, or ask whoever has the original private keys to
+share them out-of-band instead of regenerating.
 
 ## Verified manually (see conversation)
 
@@ -81,7 +96,8 @@ pointed to. This server absorbs its push-delivery role
 title/body in cleartext as part of the push alert, which would leak
 content through Apple's push servers — this version sends a content-free
 background push instead) while adding the PID binding and E2EE it lacked.
-Both default to port 3000 — don't run them at the same time.
+This server defaults to port 3001 (not 3000) specifically to avoid that
+collision — see `.env.example`.
 
 ## What's still a prototype, not production
 
