@@ -12,8 +12,6 @@
 		1FAB08702F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FAB086F2F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der */; };
 		1FAB08722F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */; };
 		1FBAB1582E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */; };
-		5C3F861C2FF67510002B13C2 /* inbox-messages.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C3F861B2FF674F2002B13C2 /* inbox-messages.json */; };
-		5C3F861D2FF67720002B13C2 /* inbox-messages.json in Resources */ = {isa = PBXBuildFile; fileRef = 5C3F861B2FF674F2002B13C2 /* inbox-messages.json */; };
 		9F8701DE2F6BE79B00A865A9 /* DcApi18013AnnexC in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8701DD2F6BE79B00A865A9 /* DcApi18013AnnexC */; };
 		9F8702012F6C41ED00A865A9 /* logic-business in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702002F6C41ED00A865A9 /* logic-business */; };
 		9F8702242F6D41F400A865A9 /* logic-ui in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702232F6D41F400A865A9 /* logic-ui */; };
@@ -59,7 +57,6 @@
 		1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_dev_access2_CA.der; sourceTree = "<group>"; };
 		1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_net_access_CA.der; sourceTree = "<group>"; };
 		1FDC0F762E8296840054F0DF /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
-		5C3F861B2FF674F2002B13C2 /* inbox-messages.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "inbox-messages.json"; sourceTree = "<group>"; };
 		9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = EudiReferenceWalletIDProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EudiWallet.entitlements; sourceTree = "<group>"; };
 		F018D9F32D087C410015876D /* logic-storage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-storage"; path = "Modules/logic-storage"; sourceTree = "<group>"; };
@@ -165,7 +162,6 @@
 			isa = PBXGroup;
 			children = (
 				9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */,
-				5C3F861B2FF674F2002B13C2 /* inbox-messages.json */,
 				1FDC0F752E8296730054F0DF /* ci_scripts */,
 				F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */,
 				F14907BA2ABAF54B00DDFE56 /* Wallet */,
@@ -340,7 +336,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5C3F861C2FF67510002B13C2 /* inbox-messages.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +355,6 @@
 				F06325102AC598370004601F /* logic-test in Resources */,
 				F0C6207E2B6A6246007F903F /* logic-analytics in Resources */,
 				F0A013992AC35ECA00065EAD /* logic-api in Resources */,
-				5C3F861D2FF67720002B13C2 /* inbox-messages.json in Resources */,
 				F0A0139A2AC35ECA00065EAD /* feature-startup in Resources */,
 				F0BFE9B72AD557290062826F /* feature-common in Resources */,
 				1FAB086E2F76B2EB004BDB87 /* eidas2sandkasse_net_access2_CA.der in Resources */,

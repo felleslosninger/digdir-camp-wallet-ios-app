@@ -40,6 +40,10 @@ struct IssuerNotificationDetailView: View {
             .foregroundStyle(Theme.shared.color.secondaryLabel)
         }
         Spacer()
+        Label(notification.trustStatus.title, systemImage: notification.trustStatus.icon)
+          .font(.caption)
+          .bold()
+          .foregroundStyle(notification.trustStatus.color)
       }
 
       Divider()
