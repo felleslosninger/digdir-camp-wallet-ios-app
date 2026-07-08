@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import SwiftUI
+import AVFoundation
 import logic_ui
 import logic_resources
 import CodeScanner
@@ -80,10 +81,19 @@ private struct ScannerViewContainer: View {
         ) { response in
           switch response {
           case .success(let result):
+            // NIVÅ 2: kameraet har faktisk dekodet en QR-kode (fyrer FØR allowScanning-guarden i onResult)
+            print("📷 [SCAN] CodeScanner dekodet kode – \(result.string.count) tegn")
             onResult(result.string)
-          case .failure:
+          case .failure(let error):
+            // NIVÅ 1: kamera-/skannerfeil (permission, init, badInput/badOutput ...)
+            print("📷 [SCAN] CodeScanner FEIL: \(error)")
             onError()
           }
+        }
+        .onAppear {
+          // NIVÅ 1: bekreft at skanneren vises og at kamera-tilgang er gitt
+          let status = AVCaptureDevice.authorizationStatus(for: .video)
+          print("📷 [SCAN] Skanner vist. allowScanning=\(viewState.allowScanning), kameraAuth.rawValue=\(status.rawValue) [0=notDetermined 1=restricted 2=denied 3=authorized]")
         }
 
         if let error = viewState.error {

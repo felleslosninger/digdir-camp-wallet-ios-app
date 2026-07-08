@@ -67,8 +67,15 @@ final class ScannerViewModel<Router: RouterHost>: ViewModel<Router, ScannerState
   }
 
   func onResult(scanResult: String) {
-    guard viewState.allowScanning else { return }
+    // NIVÅ 2: onResult ble kalt (uavhengig av innhold)
+    print("🟡 [SCAN] onResult kalt. allowScanning=\(viewState.allowScanning)")
+    guard viewState.allowScanning else {
+      print("🟡 [SCAN] onResult blokkert av allowScanning-guard (et skann er allerede under behandling)")
+      return
+    }
     setState { $0.copy(allowScanning: false) }
+    // NIVÅ 3: rå scanResult FØR validering
+    print("🟡 [SCAN] rå scanResult (\(scanResult.count) tegn) FØR validering: \(scanResult)")
     Task {
 
       let isValid = await interactor.validateForm(
@@ -85,7 +92,9 @@ final class ScannerViewModel<Router: RouterHost>: ViewModel<Router, ScannerState
         )
       ).isValid
 
+      print("🟡 [SCAN] validering fullført: isValid=\(isValid)")
       if isValid {
+        print("🟡 [SCAN] gyldig – går videre til presentasjon/utstedelse")
         await self.onScanResultValidated(scanResult: scanResult)
       } else {
 
