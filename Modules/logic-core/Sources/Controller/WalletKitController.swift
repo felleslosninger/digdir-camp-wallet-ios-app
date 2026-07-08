@@ -17,6 +17,7 @@ import logic_business
 import SwiftUI
 import logic_storage
 import logic_api
+import LongfellowZkp
 
 private enum KeyIdentifier: String, KeyChainWrapper {
   public var value: String {
@@ -152,6 +153,14 @@ final actor WalletKitControllerImpl: WalletKitController {
 
     wallet = walletKit
           LongfellowProver.setup(wallet: wallet)
+      
+      let circuits = LongfellowZkSystem.enumerateLongfellowCircuits(bundle: .main)
+      print("🔍 ZK circuits found: \(circuits.count)")
+      circuits.forEach { print("   - \($0.circuitFilename)") }
+      assert(circuits.count == 8, "Forventet 8 circuits, fant \(circuits.count)")
+
+      wallet.zkSystemRepository = ZkSystemRepository(systems: [LongfellowZkSystem(circuits: circuits)])
+      print("🔍 zkSystemRepository set: \(wallet.zkSystemRepository != nil)")
   }
     
 
