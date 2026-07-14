@@ -17,6 +17,7 @@ import logic_business
 import SwiftUI
 import logic_storage
 import logic_api
+import MdocDataModel18013
 
 private enum KeyIdentifier: String, KeyChainWrapper {
   public var value: String {
@@ -36,6 +37,17 @@ public protocol WalletKitController: Sendable {
 
   func fetchAllDocuments() async -> [any DocClaimsDecodable]
   func fetchDeferredDocuments() async -> [WalletStorage.Document]
+  /// Returns the raw stored mdoc (IssuerSigned CBOR) bytes for the first issued
+  /// document of the given docType, or nil if none. Used by the ZK prove flow,
+  /// which needs the raw IssuerSigned (docModels discard it).
+  func fetchRawIssuedMdoc(docType: String) async -> Data?
+  /// Registers the ZK system(s) used to produce zero-knowledge proofs during
+  /// presentation. Must be called before `beginPresentation` — WalletKit reads
+  /// `wallet.zkSystemRepository` when building the transfer parameters. The
+  /// concrete Longfellow system is built in the app layer (which links the
+  /// LongfellowZkp package) and injected here, so logic-core stays free of that
+  /// dependency and its MdocZK binary target.
+  func registerZkSystemRepository(_ repository: ZkSystemRepository)
   func fetchIssuedDocuments() async -> [any DocClaimsDecodable]
   func fetchIssuedDocuments(with types: [DocumentTypeIdentifier]) async -> [any DocClaimsDecodable]
   func fetchIssuedDocuments(excluded: [DocumentTypeIdentifier]) async -> [any DocClaimsDecodable]
@@ -237,6 +249,16 @@ final actor WalletKitControllerImpl: WalletKitController {
 
   func fetchIssuedDocuments() -> [any DocClaimsDecodable] {
     return wallet.storage.docModels
+  }
+
+  func fetchRawIssuedMdoc(docType: String) async -> Data? {
+    let docs = try? await wallet.loadDocuments(status: .issued)
+    return docs?.first(where: { $0.docType == docType && $0.docDataFormat == .cbor })?.data
+  }
+
+  nonisolated func registerZkSystemRepository(_ repository: ZkSystemRepository) {
+    // `wallet` is a nonisolated Sendable reference; assigning its repository is safe.
+    wallet.zkSystemRepository = repository
   }
 
   func fetchIssuedDocuments(with types: [DocumentTypeIdentifier]) -> [any DocClaimsDecodable] {

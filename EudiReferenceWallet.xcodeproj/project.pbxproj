@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A8950922FFFB5C7009A4A65 /* ZKProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8950912FFFB5C7009A4A65 /* ZKProbe.swift */; };
+		0A8950953000D78E009A4A65 /* LongfellowZkp in Frameworks */ = {isa = PBXBuildFile; productRef = 0A8950943000D78E009A4A65 /* LongfellowZkp */; };
+		0A895097300118A4009A4A65 /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 in Resources */ = {isa = PBXBuildFile; fileRef = 0A895096300118A4009A4A65 /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */; };
+		0A895099300662FB009A4A65 /* ZkSystemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A895098300662FB009A4A65 /* ZkSystemProvider.swift */; };
 		1FAAA71A2F86A5CE0091AE28 /* logic-assembly in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702272F6D55BF00A865A9 /* logic-assembly */; };
 		1FAB086E2F76B2EB004BDB87 /* eidas2sandkasse_net_access2_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FAB086D2F76B2EB004BDB87 /* eidas2sandkasse_net_access2_CA.der */; };
 		1FAB08702F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FAB086F2F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der */; };
@@ -50,6 +54,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0A8950912FFFB5C7009A4A65 /* ZKProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZKProbe.swift; sourceTree = "<group>"; };
+		0A895096300118A4009A4A65 /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */ = {isa = PBXFileReference; lastKnownFileType = file; name = 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6; path = Wallet/ZKCircuits/6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6; sourceTree = "<group>"; };
+		0A895098300662FB009A4A65 /* ZkSystemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZkSystemProvider.swift; sourceTree = "<group>"; };
 		1198ECD72AC453F200F4E71A /* logic-resources */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-resources"; path = "Modules/logic-resources"; sourceTree = "<group>"; };
 		1FAB086D2F76B2EB004BDB87 /* eidas2sandkasse_net_access2_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_net_access2_CA.der; sourceTree = "<group>"; };
 		1FAB086F2F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_dev_access_CA.der; sourceTree = "<group>"; };
@@ -120,6 +127,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F02AE3912BA6E59600C25C59 /* logic-assembly in Frameworks */,
+				0A8950953000D78E009A4A65 /* LongfellowZkp in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +167,7 @@
 		F14907AF2ABAF54B00DDFE56 = {
 			isa = PBXGroup;
 			children = (
+				0A895096300118A4009A4A65 /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */,
 				9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */,
 				1FDC0F752E8296730054F0DF /* ci_scripts */,
 				F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */,
@@ -182,6 +191,8 @@
 		F14907BA2ABAF54B00DDFE56 /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
+				0A895098300662FB009A4A65 /* ZkSystemProvider.swift */,
+				0A8950912FFFB5C7009A4A65 /* ZKProbe.swift */,
 				F0FFD1DF2D82DB8C0044B5C1 /* Certificate */,
 				F09E1EA02AC33A6800779C25 /* Config */,
 				F14907BB2ABAF54B00DDFE56 /* Application.swift */,
@@ -280,6 +291,7 @@
 			name = EudiWallet;
 			packageProductDependencies = (
 				F02AE3902BA6E59600C25C59 /* logic-assembly */,
+				0A8950943000D78E009A4A65 /* LongfellowZkp */,
 			);
 			productName = "EUDI Reference App";
 			productReference = F14907B82ABAF54B00DDFE56 /* EudiWallet.app */;
@@ -314,7 +326,7 @@
 			mainGroup = F14907AF2ABAF54B00DDFE56;
 			packageReferences = (
 				9F8701DC2F6BE79B00A865A9 /* XCRemoteSwiftPackageReference "av-lib-ios-w3c-dc-api" */,
-				0A89508E2FFD1F76009A4A65 /* XCRemoteSwiftPackageReference "av-lib-ios-longfellow-zkp" */,
+				0A8950933000D78E009A4A65 /* XCLocalSwiftPackageReference "Vendor/av-lib-ios-longfellow-zkp" */,
 			);
 			productRefGroup = F14907B92ABAF54B00DDFE56 /* Products */;
 			projectDirPath = "";
@@ -339,6 +351,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F02AE38F2BA6E45F00C25C59 /* logic-assembly in Resources */,
+				0A895097300118A4009A4A65 /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 in Resources */,
 				F06325122AC59AF50004601F /* feature-test in Resources */,
 				F14907C32ABAF55000DDFE56 /* Preview Assets.xcassets in Resources */,
 				1FAB08702F76B2FD004BDB87 /* eidas2sandkasse_dev_access_CA.der in Resources */,
@@ -397,6 +410,8 @@
 			files = (
 				F12E940F2ABC6C000086EC93 /* AppDelegate.swift in Sources */,
 				F14907BC2ABAF54B00DDFE56 /* Application.swift in Sources */,
+				0A895099300662FB009A4A65 /* ZkSystemProvider.swift in Sources */,
+				0A8950922FFFB5C7009A4A65 /* ZKProbe.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1258,15 +1273,14 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		0A89508E2FFD1F76009A4A65 /* XCRemoteSwiftPackageReference "av-lib-ios-longfellow-zkp" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/eu-digital-identity-wallet/av-lib-ios-longfellow-zkp";
-			requirement = {
-				kind = exactVersion;
-				version = 0.14.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		0A8950933000D78E009A4A65 /* XCLocalSwiftPackageReference "Vendor/av-lib-ios-longfellow-zkp" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "Vendor/av-lib-ios-longfellow-zkp";
 		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
 		9F8701DC2F6BE79B00A865A9 /* XCRemoteSwiftPackageReference "av-lib-ios-w3c-dc-api" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eu-digital-identity-wallet/av-lib-ios-w3c-dc-api.git";
@@ -1278,6 +1292,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0A8950943000D78E009A4A65 /* LongfellowZkp */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LongfellowZkp;
+		};
 		9F8701DD2F6BE79B00A865A9 /* DcApi18013AnnexC */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9F8701DC2F6BE79B00A865A9 /* XCRemoteSwiftPackageReference "av-lib-ios-w3c-dc-api" */;

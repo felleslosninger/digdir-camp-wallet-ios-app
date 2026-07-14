@@ -36,8 +36,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Initialize Workers
     initializeWorkers()
 
+    // Register the ZK system so presentations can produce zero-knowledge proofs
+    registerZkSystem()
+
     // Register the SVG coder so SDWebImage can decode & render .svg images
     registerSvgCoderToSdImage()
+
+    #if DEBUG
+    // Stage 0: isolate MdocZK/LongfellowZkp linking and log the ZK system spec.
+    ZKProbe.run()
+    #endif
 
     return true
   }
@@ -63,5 +71,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private func initializeWorkers() {
     Task { await revocationWorkManager.start() }
     Task { await reIssuanceWorkManager.start() }
+  }
+
+  /// Builds the Longfellow ZK system (circuit generation is heavy, so off-main)
+  /// and injects it into the wallet. Must be registered before any presentation,
+  /// since WalletKit reads `wallet.zkSystemRepository` when building transfer data.
+  private func registerZkSystem() {
+    let walletKitController: WalletKitController = DIGraph.shared.resolver.force(WalletKitController.self)
+    Task.detached(priority: .utility) {
+      guard let repository = ZkSystemProvider.makeRepository() else { return }
+      walletKitController.registerZkSystemRepository(repository)
+    }
   }
 }
