@@ -13,7 +13,7 @@
 		1FAB08722F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */; };
 		1FBAB1582E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der in Resources */ = {isa = PBXBuildFile; fileRef = 1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */; };
 		5D7CD0862FF693630086982C /* 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD07F2FF693630086982C /* 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e */; };
-		5D7CD0872FF693630086982C /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD07E2FF693630086982C /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */; };
+		5D7CD0872FF693630086982C /* kkkKhd in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD07E2FF693630086982C /* kkkKhd */; };
 		5D7CD0882FF693630086982C /* 7_2_4265_4096_6a5810683e62b6d7766ebd0d7ca72518a2b8325418142adcadb10d51dbbcd5ad in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD0832FF693630086982C /* 7_2_4265_4096_6a5810683e62b6d7766ebd0d7ca72518a2b8325418142adcadb10d51dbbcd5ad */; };
 		5D7CD0892FF693630086982C /* 7_1_4151_4096_8d079211715200ff06c5109639245502bfe94aa869908d31176aae4016182121 in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD0822FF693630086982C /* 7_1_4151_4096_8d079211715200ff06c5109639245502bfe94aa869908d31176aae4016182121 */; };
 		5D7CD08A2FF693630086982C /* 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6 in Resources */ = {isa = PBXBuildFile; fileRef = 5D7CD0812FF693630086982C /* 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6 */; };
@@ -64,7 +64,7 @@
 		1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_dev_access2_CA.der; sourceTree = "<group>"; };
 		1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_net_access_CA.der; sourceTree = "<group>"; };
 		1FDC0F762E8296840054F0DF /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
-		5D7CD07E2FF693630086982C /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6; sourceTree = "<group>"; };
+		5D7CD07E2FF693630086982C /* kkkKhd */ = {isa = PBXFileReference; lastKnownFileType = file; path = kkkKhd; sourceTree = "<group>"; };
 		5D7CD07F2FF693630086982C /* 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e */ = {isa = PBXFileReference; lastKnownFileType = file; path = 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e; sourceTree = "<group>"; };
 		5D7CD0802FF693630086982C /* 6_3_4121_2945_b2211223b954b34a1081e3fbf71b8ea2de28efc888b4be510f532d6ba76c2010 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 6_3_4121_2945_b2211223b954b34a1081e3fbf71b8ea2de28efc888b4be510f532d6ba76c2010; sourceTree = "<group>"; };
 		5D7CD0812FF693630086982C /* 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6; sourceTree = "<group>"; };
@@ -198,7 +198,7 @@
 		F14907BA2ABAF54B00DDFE56 /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
-				5D7CD07E2FF693630086982C /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 */,
+				5D7CD07E2FF693630086982C /* kkkKhd */,
 				5D7CD07F2FF693630086982C /* 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e */,
 				5D7CD0802FF693630086982C /* 6_3_4121_2945_b2211223b954b34a1081e3fbf71b8ea2de28efc888b4be510f532d6ba76c2010 */,
 				5D7CD0812FF693630086982C /* 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6 */,
@@ -377,7 +377,7 @@
 				F0BFE9B72AD557290062826F /* feature-common in Resources */,
 				1FAB086E2F76B2EB004BDB87 /* eidas2sandkasse_net_access2_CA.der in Resources */,
 				5D7CD0862FF693630086982C /* 6_2_4025_2945_b4bb6f01b7043f4f51d8302a30b36e3d4d2d0efc3c24557ab9212ad524a9764e in Resources */,
-				5D7CD0872FF693630086982C /* 6_1_4096_2945_137e5a75ce72735a37c8a72da1a8a0a5df8d13365c2ae3d2c2bd6a0e7197c7c6 in Resources */,
+				5D7CD0872FF693630086982C /* kkkKhd in Resources */,
 				5D7CD0882FF693630086982C /* 7_2_4265_4096_6a5810683e62b6d7766ebd0d7ca72518a2b8325418142adcadb10d51dbbcd5ad in Resources */,
 				5D7CD0892FF693630086982C /* 7_1_4151_4096_8d079211715200ff06c5109639245502bfe94aa869908d31176aae4016182121 in Resources */,
 				5D7CD08A2FF693630086982C /* 6_4_4283_2945_c70b5f44a1365c53847eb8948ad5b4fdc224251a2bc02d958c84c862823c49d6 in Resources */,
