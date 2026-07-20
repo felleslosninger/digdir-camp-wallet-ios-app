@@ -13,148 +13,249 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import Foundation
 import CryptoKit
 import Security
 
-/// A SEPARATE Secure Enclave key from `SecureEnclaveMessagingKey`. That one
-/// does key AGREEMENT (ECDH, for decrypting messages); this one does
-/// SIGNING (proving possession, for Holder Binding). The Secure Enclave
-/// issues each key for a single purpose — a key created for one cannot be
-/// (re)used for the other, and keeping them separate also means a bug or
-/// compromise in one code path can't be repurposed to abuse the other.
-///
-/// "Holder Binding" is what stops a stolen/copied Verifiable Presentation
-/// from being replayed by someone else: the Verifier's `nonce` is signed
-/// into a Key Binding JWT (KB-JWT) using a private key that exists ONLY on
-/// this phone's Secure Enclave. A verifier that checks this signature knows
-/// the presentation could only have been produced by the device holding
-/// that specific hardware key — not copied and replayed from a network
-/// capture or a phished screenshot.
+/// A SEPARATE Secure Enclave key from `SecureEnclaveMessagingKey`.
+/// `SecureEnclaveMessagingKey` does key agreement/ECDH for decrypting messages.
+/// This one does signing for holder binding, proof-of-possession, and fetch
+/// challenge signatures.
 public enum HolderBindingKey {
 
-  private static let keychainTag = "no.digdir.eudiwallet.inbox-e2ee.holder-binding-key".data(using: .utf8)!
+  private static let keychainService = "no.digdir.eudiwallet.inbox-e2ee"
+  private static let keychainAccount = "holder-binding-key"
 
   public enum KeyError: Error {
     case unavailable
   }
 
   public static func getOrCreatePrivateKey() throws -> SecureEnclave.P256.Signing.PrivateKey {
-    if let existing = try loadPrivateKey() {
-      return existing
-    }
-    guard SecureEnclave.isAvailable else { throw KeyError.unavailable }
+    print("[HolderBindingKey] getOrCreatePrivateKey started")
 
-    let accessControl = SecAccessControlCreateWithFlags(
+    if let existing = try loadPrivateKey() {
+      print("[HolderBindingKey] Existing Secure Enclave signing key loaded from Keychain")
+      return existing
+    }               
+
+    print("[HolderBindingKey] No existing signing key found")
+    print("[HolderBindingKey] SecureEnclave.isAvailable = \(SecureEnclave.isAvailable)")
+
+    guard SecureEnclave.isAvailable else {
+      print("[HolderBindingKey] ERROR: Secure Enclave is not available")
+      throw KeyError.unavailable
+    }
+
+    guard let accessControl = SecAccessControlCreateWithFlags(
       nil,
       kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
       [.privateKeyUsage],
       nil
-    )!
+    ) else {
+      print("[HolderBindingKey] ERROR: Could not create access control")
+      throw KeyError.unavailable
+    } 
 
-    let privateKey = try SecureEnclave.P256.Signing.PrivateKey(accessControl: accessControl)
-    try save(dataRepresentation: privateKey.dataRepresentation)
-    return privateKey
+    do {
+      print("[HolderBindingKey] Creating Secure Enclave P-256 signing key")
+      let privateKey = try SecureEnclave.P256.Signing.PrivateKey(accessControl: accessControl)
+
+      print("[HolderBindingKey] Signing key created")
+      print("[HolderBindingKey] Saving signing key handle to Keychain")
+      try save(dataRepresentation: privateKey.dataRepresentation)
+
+      print("[HolderBindingKey] Signing key handle saved successfully")
+      return privateKey
+    } catch {
+      print("[HolderBindingKey] ERROR while creating/saving signing key: \(error)")
+      throw KeyError.unavailable
+    }
   }
 
   /// Builds and signs a Key Binding JWT binding this PID presentation to:
-  /// - `aud`: the verifier's client_id (so it can't be replayed against a
-  ///   different verifier),
-  /// - `nonce`: the verified Request Object's nonce — which already has the
-  ///   messaging key's RFC 7638 thumbprint baked into it
-  ///   (`"<uuid>.<thumbprint>"`, committed via `/keybinding/start` BEFORE
-  ///   this presentation happened). Signing over it here proves the PID
-  ///   holder consents to binding their identity to that already-committed
-  ///   key, without this JWT needing to carry the raw key itself,
-  /// - `sdHash`: a hash of the disclosed SD-JWT credential contents (so the
-  ///   signature is bound to exactly what was disclosed, not swappable).
-  ///
-  /// Simplification vs. the real SD-JWT VC spec: a production wallet's
-  /// holder-binding public key would already be anchored in the PID
-  /// credential itself (issued into a `cnf` claim at PID issuance time), so
-  /// the verifier trusts it via the PID issuer's signature. This prototype
-  /// has no real PID issuance step, so it self-asserts the holder-binding
-  /// public key inline in the JWT header (`jwk`) — trust-on-first-use, only
-  /// good enough to demonstrate the signing mechanism itself.
-  public static func buildKeyBindingJWT(audience: String, nonce: String, sdHash: String) throws -> String {
-    let payload: [String: Any] = ["aud": audience, "nonce": nonce, "sd_hash": sdHash]
-    return try buildSelfSignedJWT(payload: payload)
+  /// - aud: verifier client_id
+  /// - nonce: verifier nonce
+  /// - sd_hash: disclosed credential hash
+  public static func buildKeyBindingJWT(
+    audience: String,
+    nonce: String,
+    sdHash: String
+  ) throws -> String {
+    print("[HolderBindingKey] buildKeyBindingJWT started")
+    print("[HolderBindingKey] audience: \(audience)")
+    print("[HolderBindingKey] nonce: \(nonce)")
+
+    let payload: [String: Any] = [
+      "aud": audience,
+      "nonce": nonce,
+      "sd_hash": sdHash
+    ]
+
+    let jwt = try buildSelfSignedJWT(payload: payload)
+
+    print("[HolderBindingKey] buildKeyBindingJWT success")
+    return jwt
   }
 
-  /// Builds a Proof-of-Possession JWT for the FINAL registration step
-  /// (`POST /keybinding/register`), completely decoupled from the OpenID4VP
-  /// presentation: it signs over a single-use `sessionToken` issued after
-  /// the presentation succeeded. A captured `sessionToken` alone is useless
-  /// to an attacker without ALSO being able to produce this fresh
-  /// signature — i.e. without holding this Secure Enclave key right now.
+  /// Builds a Proof-of-Possession JWT for the final registration step.
   public static func buildProofOfPossessionJWT(sessionToken: String) throws -> String {
-    let payload: [String: Any] = ["sub": sessionToken, "jti": UUID().uuidString]
-    return try buildSelfSignedJWT(payload: payload)
+    print("[HolderBindingKey] buildProofOfPossessionJWT started")
+
+    let payload: [String: Any] = [
+      "sub": sessionToken,
+      "jti": UUID().uuidString
+    ]
+
+    let jwt = try buildSelfSignedJWT(payload: payload)
+
+    print("[HolderBindingKey] buildProofOfPossessionJWT success")
+    return jwt
   }
 
-  /// Raw signature over a fetch challenge nonce — no JWT wrapping needed
-  /// here, since by this point the server already has our holder-binding
-  /// public key PINNED from registration (see `/keybinding/register`), so
-  /// there's nothing left to self-assert. Just prove fresh possession.
+  /// Raw signature over a fetch challenge nonce.
   public static func sign(nonce: String) throws -> String {
+    print("[HolderBindingKey] sign challenge started")
+
     let privateKey = try getOrCreatePrivateKey()
     let signature = try privateKey.signature(for: Data(nonce.utf8))
-    return signature.rawRepresentation.base64URLEncodedString()
+    let encoded = signature.rawRepresentation.base64URLEncodedString()
+
+    print("[HolderBindingKey] sign challenge success")
+    return encoded
   }
 
   private static func buildSelfSignedJWT(payload: [String: Any]) throws -> String {
+    print("[HolderBindingKey] buildSelfSignedJWT started")
+
     let privateKey = try getOrCreatePrivateKey()
-    let publicKeyPoint = privateKey.publicKey.rawRepresentation // 0x04 || X || Y, 65 bytes for P-256
-    let x = publicKeyPoint[1..<33]
-    let y = publicKeyPoint[33..<65]
+
+    let publicKeyData = privateKey.publicKey.rawRepresentation
+    print("[HolderBindingKey] raw public key length = \(publicKeyData.count)")
+
+    let coordinates = try extractP256Coordinates(from: publicKeyData)
 
     let header: [String: Any] = [
       "typ": "kb+jwt",
       "alg": "ES256",
-      "jwk": ["kty": "EC", "crv": "P-256", "x": Data(x).base64URLEncodedString(), "y": Data(y).base64URLEncodedString()]
+      "jwk": [
+        "kty": "EC",
+        "crv": "P-256",
+        "x": coordinates.x.base64URLEncodedString(),
+        "y": coordinates.y.base64URLEncodedString()
+      ]
     ]
+
     var fullPayload = payload
     fullPayload["iat"] = Int(Date().timeIntervalSince1970)
 
-    let signingInput = "\(try base64URL(header)).\(try base64URL(fullPayload))"
-    let signature = try privateKey.signature(for: Data(signingInput.utf8))
+    let encodedHeader = try base64URL(header)
+    let encodedPayload = try base64URL(fullPayload)
+    let signingInput = "\(encodedHeader).\(encodedPayload)"
 
-    // .rawRepresentation is exactly the r||s (64-byte) format JWS ES256
-    // expects — the same format the server-side verifier reads back.
-    return "\(signingInput).\(signature.rawRepresentation.base64URLEncodedString())"
+    print("[HolderBindingKey] signing input created")
+
+    let signature = try privateKey.signature(for: Data(signingInput.utf8))
+    let encodedSignature = signature.rawRepresentation.base64URLEncodedString()
+
+    print("[HolderBindingKey] buildSelfSignedJWT success")
+
+    return "\(signingInput).\(encodedSignature)"
   }
 
-  // MARK: - Keychain persistence of the Secure Enclave key handle
+  // MARK: - Helpers
+
+  private static func extractP256Coordinates(from publicKeyData: Data) throws -> (x: Data, y: Data) {
+    let bytes = Array(publicKeyData)
+
+    if bytes.count == 65 && bytes.first == 0x04 {
+      let x = Data(bytes[1..<33])
+      let y = Data(bytes[33..<65])
+
+      print("[HolderBindingKey] Extracted coordinates from 65-byte X9.63 public key")
+      return (x, y)
+    }
+
+    if bytes.count == 64 {
+      let x = Data(bytes[0..<32])
+      let y = Data(bytes[32..<64])
+
+      print("[HolderBindingKey] Extracted coordinates from 64-byte raw public key")
+      return (x, y)
+    }
+
+    print("[HolderBindingKey] ERROR: Unexpected public key length = \(bytes.count)")
+    throw KeyError.unavailable
+  }
+
+  // MARK: - Keychain persistence
 
   private static func save(dataRepresentation: Data) throws {
+    print("[HolderBindingKey] save started. Data length = \(dataRepresentation.count)")
+
     let query: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword,
-      kSecAttrApplicationTag as String: keychainTag
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: keychainAccount
     ]
+
     SecItemDelete(query as CFDictionary)
 
     var attributes = query
     attributes[kSecValueData as String] = dataRepresentation
     attributes[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+
     let status = SecItemAdd(attributes as CFDictionary, nil)
-    guard status == errSecSuccess else { throw KeyError.unavailable }
+
+    guard status == errSecSuccess else {
+      print("[HolderBindingKey] ERROR: SecItemAdd failed. Status = \(status)")
+      throw KeyError.unavailable
+    }
+
+    print("[HolderBindingKey] save success")
   }
 
   private static func loadPrivateKey() throws -> SecureEnclave.P256.Signing.PrivateKey? {
+    print("[HolderBindingKey] loadPrivateKey started")
+
     let query: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword,
-      kSecAttrApplicationTag as String: keychainTag,
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: keychainAccount,
       kSecReturnData as String: true,
       kSecMatchLimit as String: kSecMatchLimitOne
     ]
+
     var result: AnyObject?
     let status = SecItemCopyMatching(query as CFDictionary, &result)
-    guard status == errSecSuccess, let data = result as? Data else { return nil }
-    return try SecureEnclave.P256.Signing.PrivateKey(dataRepresentation: data)
+
+    if status == errSecItemNotFound {
+      print("[HolderBindingKey] No signing key found in Keychain")
+      return nil
+    }
+
+    guard status == errSecSuccess, let data = result as? Data else {
+      print("[HolderBindingKey] Keychain lookup failed. Status = \(status)")
+      return nil
+    }
+
+    do {
+      let privateKey = try SecureEnclave.P256.Signing.PrivateKey(dataRepresentation: data)
+      print("[HolderBindingKey] loadPrivateKey success")
+      return privateKey
+    } catch {
+      print("[HolderBindingKey] ERROR: Could not recreate Secure Enclave signing key: \(error)")
+      return nil
+    }
   }
 
   private static func base64URL(_ jsonObject: [String: Any]) throws -> String {
-    try JSONSerialization.data(withJSONObject: jsonObject, options: [.sortedKeys]).base64URLEncodedString()
+    let data = try JSONSerialization.data(
+      withJSONObject: jsonObject,
+      options: [.sortedKeys]
+    )
+
+    return data.base64URLEncodedString()
   }
 }
 

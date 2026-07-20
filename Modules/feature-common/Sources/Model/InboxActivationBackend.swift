@@ -13,21 +13,19 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import Foundation
 
 /// Talks to the `server/` prototype's key-binding endpoints. The backend
 /// never authenticates the user directly — it only ever receives a public
-/// key, committed to (via its RFC 7638 thumbprint) BEFORE any presentation
-/// happens, and re-proven at the very end via a fresh signature. Trust that
-/// "this public key belongs to this PID" comes from the wallet's own
-/// OpenID4VP presentation of the PID credential.
+/// key, committed to via its RFC 7638 thumbprint before any presentation
+/// happens. Trust that "this public key belongs to this PID" comes from
+/// the wallet's own OpenID4VP presentation of the PID credential.
 public enum InboxActivationBackend {
 
-  // Replace with your Mac's local IP when testing on a physical device.
-  // Port 3001, NOT 3000 — the separate `digdir-wallet-messaging-backend`
-  // prototype (used by MessagingBackend.swift / InboxTabViewModel.swift)
-  // already runs on 3000. See server/.env.example.
-  private static let baseURL = URL(string: "http://10.170.205.1:3001")!
+  // Cloudflare tunnel for local development.
+  // Keep the cloudflared Terminal window open while testing.
+  private static let baseURL = URL(string: "https://analyzed-genetics-adam-pencil.trycloudflare.com")!
 
   public enum ActivationError: Error {
     case invalidServerResponse
@@ -35,58 +33,46 @@ public enum InboxActivationBackend {
     case registrationFailed
   }
 
-  /// Stable per-install identifier sent alongside the push token — lets the
-  /// backend tell "same phone, new push token" apart from "different phone".
+  /// Stable per-install identifier sent alongside the push token.
   public static var deviceId: String {
     if let existing = UserDefaults.standard.string(forKey: "inbox_activation_device_id") {
       return existing
     }
+
     let generated = UUID().uuidString
     UserDefaults.standard.set(generated, forKey: "inbox_activation_device_id")
     return generated
   }
 
-  /// One-time key binding, in three steps that are each independently
-  /// re-verified rather than trusting a single artifact all the way through:
-  ///
-  /// 1. **Commit** (`/keybinding/start`): compute the messaging key's RFC
-  ///    7638 thumbprint and send ONLY that (not the full key) before any
-  ///    presentation happens. The backend bakes it into the OpenID4VP
-  ///    request's nonce as `"<uuid>.<thumbprint>"` — so it already knows
-  ///    which key it expects before it's shown anything.
-  /// 2. **Present** (`/keybinding/callback`): fetch + verify the Request
-  ///    Object (Request by Reference, x509_san_dns chain check), present the
-  ///    PID, and sign a Key Binding JWT over that same nonce. On success the
-  ///    backend does NOT register anything yet — it only hands back a
-  ///    single-use `session_token`.
-  /// 3. **Register** (`/keybinding/register`): send the actual public key
-  ///    (as a JWK) plus a FRESH Proof-of-Possession JWT signed over that
-  ///    session_token. The backend cross-checks the JWK's thumbprint against
-  ///    what was committed in step 1, and verifies the fresh signature,
-  ///    before finally persisting the registration.
-  ///
-  /// Building the actual Verifiable Presentation (the SD-JWT PID disclosure
-  /// itself) is MOCKED below — wiring this to the app's real
-  /// `WalletKitController`/OpenID4VP presentation flow (already a
-  /// dependency of this project) is the remaining real integration work.
   @MainActor
   public static func activate(pushToken: String) async throws {
+    print("[InboxActivationBackend] Starting activation against \(baseURL.absoluteString)")
+
     let thumbprint = try SecureEnclaveMessagingKey.publicKeyThumbprint()
+    print("[InboxActivationBackend] Created Secure Enclave key thumbprint")
 
-    let start = try await startKeyBinding(keyThumbprint: thumbprint, pushToken: pushToken, deviceId: deviceId)
-    guard let requestUri = URL(string: start.requestUri) else { throw ActivationError.invalidServerResponse }
+    let start = try await startKeyBinding(
+      keyThumbprint: thumbprint,
+      pushToken: pushToken,
+      deviceId: deviceId
+    )
 
-    // Request by Reference: fetch the signed Request Object, then verify
-    // its x509_san_dns chain BEFORE trusting anything inside it. Its nonce
-    // already contains the thumbprint we committed above.
+    print("[InboxActivationBackend] /keybinding/start OK")
+
+    let rewrittenRequestUri = rewriteLocalhostRequestUri(start.requestUri)
+
+    print("[InboxActivationBackend] request_uri original: \(start.requestUri)")
+    print("[InboxActivationBackend] request_uri rewritten: \(rewrittenRequestUri)")
+
+    guard let requestUri = URL(string: rewrittenRequestUri) else {
+      throw ActivationError.invalidServerResponse
+    }
+
     let verifiedRequest = try await RequestByReferenceFetcher.fetchAndVerify(from: requestUri)
+    print("[InboxActivationBackend] Request object fetched and verified")
 
-    // --- MOCK: real flow presents verifiedRequest.presentationDefinition
-    // to the wallet's own OpenID4VP presentation UI, which selects/discloses
-    // the PID SD-JWT credential. `sdHash` below stands in for
-    // SHA-256(issuer-signed JWT + disclosures), per the SD-JWT VC spec. ---
+    // MOCK: real flow should present PID through wallet/OpenID4VP UI.
     let mockSdHash = "mock-sd-hash-of-disclosed-pid-claims"
-    // -----------------------------------------------------------------
 
     let keyBindingJWT = try HolderBindingKey.buildKeyBindingJWT(
       audience: verifiedRequest.clientId,
@@ -96,13 +82,16 @@ public enum InboxActivationBackend {
 
     let sessionToken = try await completeKeyBinding(
       state: verifiedRequest.state,
-      mockPid: "01020312345",
+      mockPid: "99887766554",
       keyBindingJWT: keyBindingJWT
     )
 
-    // Fresh proof of possession, decoupled from the presentation: proves
-    // we still hold the key right now, not just that we once did.
-    let popJWT = try HolderBindingKey.buildProofOfPossessionJWT(sessionToken: sessionToken)
+    print("[InboxActivationBackend] /keybinding/callback OK")
+
+    let popJWT = try HolderBindingKey.buildProofOfPossessionJWT(
+      sessionToken: sessionToken
+    )
+
     let publicKeyJWK = try SecureEnclaveMessagingKey.publicKeyJWK()
 
     let registrationId = try await registerKeyBinding(
@@ -112,31 +101,59 @@ public enum InboxActivationBackend {
       popJWT: popJWT
     )
 
+    print("[InboxActivationBackend] /keybinding/register OK")
+    print("[InboxActivationBackend] registration_id: \(registrationId)")
+
     InboxActivationKeychain.markActivated(registrationId: registrationId)
   }
 
-  /// Call whenever the OS hands the app a new push token. If the inbox was
-  /// never activated, this is a no-op — activation must be a deliberate,
-  /// user-initiated action (the "Aktiver" button), not something that
-  /// silently happens on token refresh.
   public static func refreshPushToken(_ pushToken: String) async {
     guard isActivated else { return }
-    // A full deployment would add a dedicated refresh endpoint accepting a
-    // signature over a fresh challenge (same pattern as the PoP-JWT above)
-    // instead of repeating the whole key-binding ceremony. Omitted here for
-    // brevity — see README.
+
+    // Prototype note:
+    // A real deployment would add a dedicated refresh endpoint accepting a
+    // signature over a fresh challenge instead of repeating activation.
   }
 
   public static var isActivated: Bool {
     InboxActivationKeychain.isActivated
   }
 
-  // MARK: - Private
+  /// The server may return a request URI pointing to localhost because it
+  /// runs locally on the Mac. On a physical iPhone, localhost means the
+  /// iPhone itself. During Cloudflare testing we rewrite that URI to the
+  /// public tunnel base URL.
+  private static func rewriteLocalhostRequestUri(_ requestUri: String) -> String {
+    guard
+      let originalURL = URL(string: requestUri),
+      let host = originalURL.host,
+      host == "localhost" || host == "127.0.0.1"
+    else {
+      return requestUri
+    }
 
-  private static func startKeyBinding(keyThumbprint: String, pushToken: String, deviceId: String) async throws -> StartResponse {
+    guard var components = URLComponents(url: originalURL, resolvingAgainstBaseURL: false) else {
+      return requestUri
+    }
+
+    components.scheme = baseURL.scheme
+    components.host = baseURL.host
+    components.port = baseURL.port
+
+    return components.url?.absoluteString ?? requestUri
+  }
+
+  // MARK: - Private requests
+
+  private static func startKeyBinding(
+    keyThumbprint: String,
+    pushToken: String,
+    deviceId: String
+  ) async throws -> StartResponse {
     guard let url = URL(string: "/keybinding/start", relativeTo: baseURL) else {
       throw ActivationError.invalidServerResponse
     }
+
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -146,14 +163,33 @@ public enum InboxActivationBackend {
       "device_id": deviceId
     ])
 
-    let (data, _) = try await URLSession.shared.data(for: request)
+    print("[InboxActivationBackend] POST \(url.absoluteString)")
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw ActivationError.invalidServerResponse
+    }
+
+    print("[InboxActivationBackend] /keybinding/start status: \(httpResponse.statusCode)")
+    print("[InboxActivationBackend] /keybinding/start response: \(String(data: data, encoding: .utf8) ?? "")")
+
+    guard httpResponse.statusCode == 200 else {
+      throw ActivationError.keyBindingFailed
+    }
+
     return try JSONDecoder().decode(StartResponse.self, from: data)
   }
 
-  private static func completeKeyBinding(state: String, mockPid: String, keyBindingJWT: String) async throws -> String {
+  private static func completeKeyBinding(
+    state: String,
+    mockPid: String,
+    keyBindingJWT: String
+  ) async throws -> String {
     guard let url = URL(string: "/keybinding/callback", relativeTo: baseURL) else {
       throw ActivationError.invalidServerResponse
     }
+
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -163,8 +199,21 @@ public enum InboxActivationBackend {
       "key_binding_jwt": keyBindingJWT
     ])
 
+    print("[InboxActivationBackend] POST \(url.absoluteString)")
+
     let (data, response) = try await URLSession.shared.data(for: request)
-    guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw ActivationError.keyBindingFailed }
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw ActivationError.invalidServerResponse
+    }
+
+    print("[InboxActivationBackend] /keybinding/callback status: \(httpResponse.statusCode)")
+    print("[InboxActivationBackend] /keybinding/callback response: \(String(data: data, encoding: .utf8) ?? "")")
+
+    guard httpResponse.statusCode == 200 else {
+      throw ActivationError.keyBindingFailed
+    }
+
     return try JSONDecoder().decode(CallbackResponse.self, from: data).sessionToken
   }
 
@@ -177,6 +226,7 @@ public enum InboxActivationBackend {
     guard let url = URL(string: "/keybinding/register", relativeTo: baseURL) else {
       throw ActivationError.invalidServerResponse
     }
+
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -187,18 +237,66 @@ public enum InboxActivationBackend {
       popJwt: popJWT
     ))
 
+    print("[InboxActivationBackend] POST \(url.absoluteString)")
+
     let (data, response) = try await URLSession.shared.data(for: request)
-    guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw ActivationError.registrationFailed }
+
+    guard let httpResponse = response as? HTTPURLResponse else {
+      throw ActivationError.invalidServerResponse
+    }
+
+    print("[InboxActivationBackend] /keybinding/register status: \(httpResponse.statusCode)")
+    print("[InboxActivationBackend] /keybinding/register response: \(String(data: data, encoding: .utf8) ?? "")")
+
+    guard httpResponse.statusCode == 200 else {
+      throw ActivationError.registrationFailed
+    }
+
     return try JSONDecoder().decode(RegisterResponse.self, from: data).registrationId
   }
+
+  // MARK: - Response/request models
 
   private struct StartResponse: Decodable {
     let requestUri: String
     let state: String
+
+    enum CodingKeys: String, CodingKey {
+      case requestUri
+      case request_uri
+      case state
+    }
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+
+      if let camelCaseValue = try container.decodeIfPresent(String.self, forKey: .requestUri) {
+        requestUri = camelCaseValue
+      } else {
+        requestUri = try container.decode(String.self, forKey: .request_uri)
+      }
+
+      state = try container.decode(String.self, forKey: .state)
+    }
   }
 
   private struct CallbackResponse: Decodable {
     let sessionToken: String
+
+    enum CodingKeys: String, CodingKey {
+      case sessionToken
+      case session_token
+    }
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+
+      if let camelCaseValue = try container.decodeIfPresent(String.self, forKey: .sessionToken) {
+        sessionToken = camelCaseValue
+      } else {
+        sessionToken = try container.decode(String.self, forKey: .session_token)
+      }
+    }
   }
 
   private struct RegisterRequest: Encodable {
@@ -217,5 +315,20 @@ public enum InboxActivationBackend {
 
   private struct RegisterResponse: Decodable {
     let registrationId: String
+
+    enum CodingKeys: String, CodingKey {
+      case registrationId
+      case registration_id
+    }
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+
+      if let camelCaseValue = try container.decodeIfPresent(String.self, forKey: .registrationId) {
+        registrationId = camelCaseValue
+      } else {
+        registrationId = try container.decode(String.self, forKey: .registration_id)
+      }
+    }
   }
 }

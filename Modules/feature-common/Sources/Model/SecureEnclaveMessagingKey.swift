@@ -13,21 +13,18 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import Foundation
 import CryptoKit
 import Security
 
-/// Owns the device's P-256 messaging keypair. The private key is generated
-/// INSIDE the Secure Enclave and never exists outside it in any exportable
-/// form — `SecureEnclave.P256.KeyAgreement.PrivateKey` is a handle, not key
-/// material. This is what makes server-side compromise harmless: even a
-/// full database dump only ever contains the public key.
-///
-/// Only P-256 is supported here because the Secure Enclave does not support
-/// Ed25519 — key agreement (ECDH) on-device requires P-256.
+/// Owns the device's P-256 messaging keypair.
+/// The private key is generated inside the Secure Enclave and never leaves
+/// the device. The backend only receives the public key / JWK.
 public enum SecureEnclaveMessagingKey {
 
-  private static let keychainTag = "no.digdir.eudiwallet.inbox-e2ee.device-key".data(using: .utf8)!
+  private static let keychainService = "no.digdir.eudiwallet.inbox-e2ee"
+  private static let keychainAccount = "device-key"
 
   public enum KeyError: Error {
     case unavailable
@@ -35,32 +32,75 @@ public enum SecureEnclaveMessagingKey {
   }
 
   /// Generates the keypair once per install and persists the Secure Enclave
-  /// handle in the Keychain (not the key itself — SE keys never leave the
-  /// chip). Idempotent: returns the existing key if one is already there.
+  /// key handle in the Keychain.
   public static func getOrCreatePrivateKey() throws -> SecureEnclave.P256.KeyAgreement.PrivateKey {
+    print("[SecureEnclaveMessagingKey] getOrCreatePrivateKey started")
+
     if let existing = try loadPrivateKey() {
+      print("[SecureEnclaveMessagingKey] Existing Secure Enclave key loaded from Keychain")
       return existing
     }
-    guard SecureEnclave.isAvailable else { throw KeyError.unavailable }
 
-    let accessControl = SecAccessControlCreateWithFlags(
+    print("[SecureEnclaveMessagingKey] No existing key found")
+    print("[SecureEnclaveMessagingKey] SecureEnclave.isAvailable = \(SecureEnclave.isAvailable)")
+
+    guard SecureEnclave.isAvailable else {
+      print("[SecureEnclaveMessagingKey] ERROR: Secure Enclave is not available")
+      throw KeyError.unavailable
+    }
+
+    guard let accessControl = SecAccessControlCreateWithFlags(
       nil,
       kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
       [.privateKeyUsage],
       nil
-    )!
+    ) else {
+      print("[SecureEnclaveMessagingKey] ERROR: Could not create access control")
+      throw KeyError.unavailable
+    }
 
-    let privateKey = try SecureEnclave.P256.KeyAgreement.PrivateKey(accessControl: accessControl)
-    try save(dataRepresentation: privateKey.dataRepresentation)
-    return privateKey
+    do {
+      print("[SecureEnclaveMessagingKey] Creating Secure Enclave P-256 key")
+      let privateKey = try SecureEnclave.P256.KeyAgreement.PrivateKey(accessControl: accessControl)
+
+      print("[SecureEnclaveMessagingKey] Secure Enclave key created")
+      print("[SecureEnclaveMessagingKey] Saving key handle to Keychain")
+      try save(dataRepresentation: privateKey.dataRepresentation)
+
+      print("[SecureEnclaveMessagingKey] Key handle saved successfully")
+      return privateKey
+
+    } catch {
+      print("[SecureEnclaveMessagingKey] ERROR while creating/saving key: \(error)")
+      throw KeyError.unavailable
+    }
   }
 
-  /// The public key to hand to the backend during OpenID4VP key-binding.
-  /// Encoded as the raw X9.63 uncompressed point (0x04 || X || Y) — the same
-  /// wire format the server's `ecies.js` expects, so no ASN.1 wrangling is
-  /// needed on either side.
+  /// Public key to register with backend.
+  /// iOS gives us the public key as 64 bytes: X || Y.
+  /// Some server-side crypto expects X9.63 format: 0x04 || X || Y.
+  /// For registration/JWK we support both.
   public static func publicKeyForKeyBinding() throws -> Data {
-    try getOrCreatePrivateKey().publicKey.rawRepresentation
+    print("[SecureEnclaveMessagingKey] publicKeyForKeyBinding started")
+
+    let rawPublicKey = try getOrCreatePrivateKey().publicKey.rawRepresentation
+
+    print("[SecureEnclaveMessagingKey] raw public key length = \(rawPublicKey.count)")
+
+    if rawPublicKey.count == 64 {
+      var x963 = Data([0x04])
+      x963.append(rawPublicKey)
+      print("[SecureEnclaveMessagingKey] Converted 64-byte raw key to 65-byte X9.63 key")
+      return x963
+    }
+
+    if rawPublicKey.count == 65 {
+      print("[SecureEnclaveMessagingKey] Public key already appears to be X9.63")
+      return rawPublicKey
+    }
+
+    print("[SecureEnclaveMessagingKey] ERROR: Unexpected public key length = \(rawPublicKey.count)")
+    throw KeyError.unavailable
   }
 
   public struct JWK: Encodable {
@@ -70,42 +110,46 @@ public enum SecureEnclaveMessagingKey {
     public let y: String
   }
 
-  /// The public key as a JWK — the format the registration step
-  /// (`POST /keybinding/register`) and RFC 7638 thumbprinting both expect.
+  /// Public key as JWK for backend registration.
   public static func publicKeyJWK() throws -> JWK {
+    print("[SecureEnclaveMessagingKey] publicKeyJWK started")
+
     let point = try publicKeyForKeyBinding()
-    let x = point[1..<33]
-    let y = point[33..<65]
-    return JWK(x: Data(x).base64URLEncodedString(), y: Data(y).base64URLEncodedString())
+    let coordinates = try extractP256Coordinates(from: point)
+
+    let jwk = JWK(
+      x: coordinates.x.base64URLEncodedString(),
+      y: coordinates.y.base64URLEncodedString()
+    )
+
+    print("[SecureEnclaveMessagingKey] publicKeyJWK success")
+    return jwk
   }
 
-  /// RFC 7638 JWK Thumbprint: a compact, deterministic hash of the public
-  /// key. Committed to the backend BEFORE any OpenID4VP presentation
-  /// happens (`POST /keybinding/start`), so the server knows exactly which
-  /// key it expects long before it sees the actual key disclosed at
-  /// registration time. Member order and exact JSON serialization (no
-  /// whitespace) are fixed by the spec — this must byte-for-byte match
-  /// what `jwk.js` on the server computes.
+  /// RFC 7638 JWK Thumbprint.
   public static func publicKeyThumbprint() throws -> String {
+    print("[SecureEnclaveMessagingKey] publicKeyThumbprint started")
+
     let jwk = try publicKeyJWK()
     let canonical = "{\"crv\":\"\(jwk.crv)\",\"kty\":\"\(jwk.kty)\",\"x\":\"\(jwk.x)\",\"y\":\"\(jwk.y)\"}"
     let digest = SHA256.hash(data: Data(canonical.utf8))
-    return Data(digest).base64URLEncodedString()
+    let thumbprint = Data(digest).base64URLEncodedString()
+
+    print("[SecureEnclaveMessagingKey] publicKeyThumbprint success: \(thumbprint)")
+    return thumbprint
   }
 
-  /// Performs ECDH against a sender's one-time ephemeral public key, derives
-  /// the same AES-256-GCM key the sender used (via HKDF with the salt they
-  /// sent), and decrypts. This never leaves the device — the Secure Enclave
-  /// performs the ECDH step internally without ever exposing the private
-  /// scalar to the app process.
+  /// Decrypts an E2EE message locally on device.
   public static func decrypt(
     ciphertextWithTag: Data,
     iv: Data,
     hkdfSalt: Data,
     senderEphemeralPublicKey: Data
   ) throws -> String {
+    print("[SecureEnclaveMessagingKey] decrypt started")
+
     let privateKey = try getOrCreatePrivateKey()
-    let ephemeralPublicKey = try P256.KeyAgreement.PublicKey(rawRepresentation: senderEphemeralPublicKey)
+    let ephemeralPublicKey = try makeP256KeyAgreementPublicKey(from: senderEphemeralPublicKey)
 
     let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: ephemeralPublicKey)
     let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(
@@ -115,46 +159,118 @@ public enum SecureEnclaveMessagingKey {
       outputByteCount: 32
     )
 
-    // AES.GCM.SealedBox wants nonce + ciphertext + tag split out; our wire
-    // format (matching ecies.js) appends the 16-byte tag to the ciphertext.
     let tag = ciphertextWithTag.suffix(16)
     let ciphertext = ciphertextWithTag.dropLast(16)
     let nonce = try AES.GCM.Nonce(data: iv)
-    let sealedBox = try AES.GCM.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag)
+    let sealedBox = try AES.GCM.SealedBox(
+      nonce: nonce,
+      ciphertext: ciphertext,
+      tag: tag
+    )
 
-    guard let plaintext = String(data: try AES.GCM.open(sealedBox, using: symmetricKey), encoding: .utf8) else {
+    guard let plaintext = String(
+      data: try AES.GCM.open(sealedBox, using: symmetricKey),
+      encoding: .utf8
+    ) else {
+      print("[SecureEnclaveMessagingKey] ERROR: Decryption failed")
       throw KeyError.decryptionFailed
     }
+
+    print("[SecureEnclaveMessagingKey] decrypt success")
     return plaintext
   }
 
-  // MARK: - Keychain persistence of the Secure Enclave key handle
+  // MARK: - Helpers
+
+  private static func extractP256Coordinates(from point: Data) throws -> (x: Data, y: Data) {
+    if point.count == 65 && point.first == 0x04 {
+      let x = point.subdata(in: 1..<33)
+      let y = point.subdata(in: 33..<65)
+      print("[SecureEnclaveMessagingKey] Extracted coordinates from 65-byte X9.63 key")
+      return (x, y)
+    }
+
+    if point.count == 64 {
+      let x = point.subdata(in: 0..<32)
+      let y = point.subdata(in: 32..<64)
+      print("[SecureEnclaveMessagingKey] Extracted coordinates from 64-byte raw key")
+      return (x, y)
+    }
+
+    print("[SecureEnclaveMessagingKey] ERROR: Could not extract coordinates. Length = \(point.count)")
+    throw KeyError.unavailable
+  }
+
+  private static func makeP256KeyAgreementPublicKey(from data: Data) throws -> P256.KeyAgreement.PublicKey {
+    if data.count == 65 && data.first == 0x04 {
+      let raw = data.subdata(in: 1..<65)
+      print("[SecureEnclaveMessagingKey] Converted 65-byte X9.63 public key to 64-byte raw key for CryptoKit")
+      return try P256.KeyAgreement.PublicKey(rawRepresentation: raw)
+    }
+
+    print("[SecureEnclaveMessagingKey] Using public key directly. Length = \(data.count)")
+    return try P256.KeyAgreement.PublicKey(rawRepresentation: data)
+  }
+
+  // MARK: - Keychain persistence
 
   private static func save(dataRepresentation: Data) throws {
+    print("[SecureEnclaveMessagingKey] save started. Data length = \(dataRepresentation.count)")
+
     let query: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword,
-      kSecAttrApplicationTag as String: keychainTag
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: keychainAccount
     ]
+
     SecItemDelete(query as CFDictionary)
 
     var attributes = query
     attributes[kSecValueData as String] = dataRepresentation
     attributes[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+
     let status = SecItemAdd(attributes as CFDictionary, nil)
-    guard status == errSecSuccess else { throw KeyError.unavailable }
+
+    guard status == errSecSuccess else {
+      print("[SecureEnclaveMessagingKey] ERROR: SecItemAdd failed. Status = \(status)")
+      throw KeyError.unavailable
+    }
+
+    print("[SecureEnclaveMessagingKey] save success")
   }
 
   private static func loadPrivateKey() throws -> SecureEnclave.P256.KeyAgreement.PrivateKey? {
+    print("[SecureEnclaveMessagingKey] loadPrivateKey started")
+
     let query: [String: Any] = [
       kSecClass as String: kSecClassGenericPassword,
-      kSecAttrApplicationTag as String: keychainTag,
+      kSecAttrService as String: keychainService,
+      kSecAttrAccount as String: keychainAccount,
       kSecReturnData as String: true,
       kSecMatchLimit as String: kSecMatchLimitOne
     ]
+
     var result: AnyObject?
     let status = SecItemCopyMatching(query as CFDictionary, &result)
-    guard status == errSecSuccess, let data = result as? Data else { return nil }
-    return try SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: data)
+
+    if status == errSecItemNotFound {
+      print("[SecureEnclaveMessagingKey] No key found in Keychain")
+      return nil
+    }
+
+    guard status == errSecSuccess, let data = result as? Data else {
+      print("[SecureEnclaveMessagingKey] Keychain lookup failed. Status = \(status)")
+      return nil
+    }
+
+    do {
+      let privateKey = try SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: data)
+      print("[SecureEnclaveMessagingKey] loadPrivateKey success")
+      return privateKey
+    } catch {
+      print("[SecureEnclaveMessagingKey] ERROR: Could not recreate Secure Enclave key: \(error)")
+      return nil
+    }
   }
 }
 

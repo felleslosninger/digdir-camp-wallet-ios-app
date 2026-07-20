@@ -107,7 +107,7 @@ struct WalletKitConfigImpl: WalletKitConfig {
         return [
           .init(
             config: .init(
-              credentialIssuerURL: "https://10.170.205.1:5443",
+              credentialIssuerURL: "https://172.20.10.6:5443",
               clientId: "demo-lommebok-test",
               keyAttestationsConfig: .init(walletAttestationsProvider: walletKitAttestationProvider),
               authFlowRedirectionURI: URL(string: "eu.europa.ec.euidi://authorization")!,

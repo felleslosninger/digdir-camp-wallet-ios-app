@@ -13,9 +13,10 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import Foundation
 import UIKit
-import UserNotifications
+@preconcurrency import UserNotifications
 import logic_assembly
 import logic_core
 import feature_common
@@ -26,6 +27,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private lazy var analyticsController: AnalyticsController = DIGraph.shared.resolver.force(AnalyticsController.self)
   private lazy var revocationWorkManager: RevocationWorkManager = DIGraph.shared.resolver.force(RevocationWorkManager.self)
   private lazy var reIssuanceWorkManager: ReIssuanceWorkManager = DIGraph.shared.resolver.force(ReIssuanceWorkManager.self)
+
+  private let inboxShouldRefreshNotificationName = Notification.Name("inboxShouldRefresh")
 
   func application(
     _ application: UIApplication,
@@ -41,6 +44,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Register the SVG coder so SDWebImage can decode & render .svg images
     registerSvgCoderToSdImage()
 
+    // Let AppDelegate handle notification callbacks while app is foregrounded / opened from notification
+    UNUserNotificationCenter.current().delegate = self
+
     // Request permission for visible push notifications (banner, sound, badge)
     UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
 
@@ -55,8 +61,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     shouldAllowExtensionPointIdentifier extensionPointIdentifier: UIApplication.ExtensionPointIdentifier
   ) -> Bool {
     switch extensionPointIdentifier {
-    case UIApplication.ExtensionPointIdentifier.keyboard: return false
-    default: return true
+    case UIApplication.ExtensionPointIdentifier.keyboard:
+      return false
+    default:
+      return true
     }
   }
 
@@ -65,17 +73,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
     let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+
     print("[APNs] Got device token: \(token)")
+
     UserDefaults.standard.set(token, forKey: "apns_device_token")
+
     Task {
       print("[APNs] Sending token to backend...")
+
       await MessagingBackend.registerDevice(token: token)
+
       print("[APNs] registerDevice call done")
 
-      // The inbox activation is a separate, PID-bound registration. Only
-      // refresh it here (no BankID) — never activate it implicitly.
-      guard InboxActivationBackend.isActivated else { return }
+      // The inbox activation is a separate, PID-bound registration.
+      // Only refresh it here if the inbox is already activated.
+      guard InboxActivationBackend.isActivated else {
+        return
+      }
+
       await InboxActivationBackend.refreshPushToken(token)
+
       print("[Inbox] refreshed push token for existing activation")
     }
   }
@@ -93,8 +110,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
   ) {
     print("[APNs] Received remote notification: \(userInfo)")
+
     Task {
-      await MessagingBackend.fetchAndStoreMessages()
+      print("[Inbox] Push received via didReceiveRemoteNotification. Asking inbox UI to refresh.")
+
+      await MainActor.run {
+        NotificationCenter.default.post(
+          name: self.inboxShouldRefreshNotificationName,
+          object: nil
+        )
+      }
+
       completionHandler(.newData)
     }
   }
@@ -110,5 +136,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   private func initializeWorkers() {
     Task { await revocationWorkManager.start() }
     Task { await reIssuanceWorkManager.start() }
+  }
+}
+
+// MARK: - User notification handling
+
+extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    print("[APNs] Notification received while app is foregrounded: \(notification.request.content.userInfo)")
+
+    if #available(iOS 14.0, *) {
+      completionHandler([.banner, .sound, .badge])
+    } else {
+      completionHandler([.alert, .sound, .badge])
+    }
+  }
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    print("[APNs] User opened notification: \(response.notification.request.content.userInfo)")
+
+    NotificationCenter.default.post(
+      name: Notification.Name("inboxShouldRefresh"),
+      object: nil
+    )
+
+    completionHandler()
   }
 }

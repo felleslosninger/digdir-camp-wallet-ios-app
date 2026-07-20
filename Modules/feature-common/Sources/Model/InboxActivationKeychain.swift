@@ -13,26 +13,26 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
 import Foundation
 
 /// Tracks whether the one-time key binding has completed, and the opaque
-/// `registrationId` the backend uses to address this device's inbox. Note
-/// what's deliberately NOT here: no bearer token, no session secret — the
-/// thing that actually protects this device's messages is the Secure
-/// Enclave private key in `SecureEnclaveMessagingKey`, which never leaves
-/// the chip and so has nothing to steal from the Keychain in the first
-/// place. `registrationId` is not sensitive on its own (it doesn't identify
-/// the PID or decrypt anything), so plain UserDefaults is sufficient.
+/// `registrationId` the backend uses to address this device's inbox.
+/// `registrationId` is not sensitive on its own, so plain UserDefaults is
+/// sufficient for this prototype.
 enum InboxActivationKeychain {
 
   private static let registrationIdKey = "inbox_activation_registration_id"
 
   static func markActivated(registrationId: String) {
+    print("[InboxActivationKeychain] Saving registrationId: \(registrationId)")
     UserDefaults.standard.set(registrationId, forKey: registrationIdKey)
   }
 
   static var registrationId: String? {
-    UserDefaults.standard.string(forKey: registrationIdKey)
+    let value = UserDefaults.standard.string(forKey: registrationIdKey)
+    print("[InboxActivationKeychain] Loaded registrationId: \(value ?? "nil")")
+    return value
   }
 
   static var isActivated: Bool {
@@ -40,6 +40,7 @@ enum InboxActivationKeychain {
   }
 
   static func clear() {
+    print("[InboxActivationKeychain] Clearing registrationId")
     UserDefaults.standard.removeObject(forKey: registrationIdKey)
   }
 }

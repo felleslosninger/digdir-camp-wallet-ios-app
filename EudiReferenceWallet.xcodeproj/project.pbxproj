@@ -17,6 +17,7 @@
 		9F8702242F6D41F400A865A9 /* logic-ui in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702232F6D41F400A865A9 /* logic-ui */; };
 		9F8702262F6D55B800A865A9 /* feature-common in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702252F6D55B800A865A9 /* feature-common */; };
 		9F87022A2F6D55C700A865A9 /* logic-core in Frameworks */ = {isa = PBXBuildFile; productRef = 9F8702292F6D55C700A865A9 /* logic-core */; };
+		CCE18FE55B184857955714B7 /* MessagingBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2670989E263743438D57A540 /* MessagingBackend.swift */; };
 		F02AE38F2BA6E45F00C25C59 /* logic-assembly in Resources */ = {isa = PBXBuildFile; fileRef = F02AE38E2BA6E45F00C25C59 /* logic-assembly */; };
 		F02AE3912BA6E59600C25C59 /* logic-assembly in Frameworks */ = {isa = PBXBuildFile; productRef = F02AE3902BA6E59600C25C59 /* logic-assembly */; settings = {ATTRIBUTES = (Required, ); }; };
 		F05E9F382AFABBC200891E8F /* feature-presentation in Resources */ = {isa = PBXBuildFile; fileRef = F05E9F372AFABBC200891E8F /* feature-presentation */; };
@@ -30,7 +31,6 @@
 		F0A0139C2AC35ECA00065EAD /* logic-ui in Resources */ = {isa = PBXBuildFile; fileRef = F0A013962AC35ECA00065EAD /* logic-ui */; };
 		F0BFE9B72AD557290062826F /* feature-common in Resources */ = {isa = PBXBuildFile; fileRef = F0BFE9B62AD557290062826F /* feature-common */; };
 		F0C6207E2B6A6246007F903F /* logic-analytics in Resources */ = {isa = PBXBuildFile; fileRef = F0C6207D2B6A6246007F903F /* logic-analytics */; };
-		CCE18FE55B184857955714B7 /* MessagingBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2670989E263743438D57A540 /* MessagingBackend.swift */; };
 		F12E940F2ABC6C000086EC93 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12E940E2ABC6C000086EC93 /* AppDelegate.swift */; };
 		F14907BC2ABAF54B00DDFE56 /* Application.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14907BB2ABAF54B00DDFE56 /* Application.swift */; };
 		F14907C02ABAF55000DDFE56 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F14907BF2ABAF55000DDFE56 /* Assets.xcassets */; };
@@ -57,6 +57,8 @@
 		1FAB08712F76B308004BDB87 /* eidas2sandkasse_dev_access2_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_dev_access2_CA.der; sourceTree = "<group>"; };
 		1FBAB1572E7DE7A70092FE59 /* eidas2sandkasse_net_access_CA.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = eidas2sandkasse_net_access_CA.der; sourceTree = "<group>"; };
 		1FDC0F762E8296840054F0DF /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
+		2670989E263743438D57A540 /* MessagingBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingBackend.swift; sourceTree = "<group>"; };
+		5CE35E8B2FFE612A0064341C /* EudiReferenceWallet.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = EudiReferenceWallet.xcodeproj; sourceTree = SOURCE_ROOT; };
 		9F8701C92F6BE5BC00A865A9 /* EudiReferenceWalletIDProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = EudiReferenceWalletIDProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EudiWallet.entitlements; sourceTree = "<group>"; };
 		F018D9F32D087C410015876D /* logic-storage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-storage"; path = "Modules/logic-storage"; sourceTree = "<group>"; };
@@ -78,7 +80,6 @@
 		F0BFE9B62AD557290062826F /* feature-common */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "feature-common"; path = "Modules/feature-common"; sourceTree = "<group>"; };
 		F0C6207D2B6A6246007F903F /* logic-analytics */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-analytics"; path = "Modules/logic-analytics"; sourceTree = "<group>"; };
 		F0DF43F42BA083DF003498ED /* logic-authentication */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "logic-authentication"; path = "Modules/logic-authentication"; sourceTree = "<group>"; };
-		2670989E263743438D57A540 /* MessagingBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagingBackend.swift; sourceTree = "<group>"; };
 		F12E940E2ABC6C000086EC93 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F14907B82ABAF54B00DDFE56 /* EudiWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EudiWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F14907BB2ABAF54B00DDFE56 /* Application.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Application.swift; sourceTree = "<group>"; };
@@ -136,6 +137,11 @@
 			path = ci_scripts;
 			sourceTree = "<group>";
 		};
+		5C04C10A3004E02A003C3677 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
 		F09E1EA02AC33A6800779C25 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +167,7 @@
 		F14907AF2ABAF54B00DDFE56 = {
 			isa = PBXGroup;
 			children = (
+				5CE35E8B2FFE612A0064341C /* EudiReferenceWallet.xcodeproj */,
 				9F8701DF2F6BE96C00A865A9 /* EudiWallet.entitlements */,
 				1FDC0F752E8296730054F0DF /* ci_scripts */,
 				F0A0BE922AC35925002BE0F5 /* EudiWallet.xctestplan */,
@@ -323,6 +330,12 @@
 			);
 			productRefGroup = F14907B92ABAF54B00DDFE56 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 5C04C10A3004E02A003C3677 /* Products */;
+					ProjectRef = 5CE35E8B2FFE612A0064341C /* EudiReferenceWallet.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				F14907B72ABAF54B00DDFE56 /* EudiWallet */,
@@ -878,7 +891,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
 				NEW_SETTING = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "no.digdir.camper.wallet.demo";
+				PRODUCT_BUNDLE_IDENTIFIER = no.digdir.camper.wallet.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -987,7 +1000,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
 				NEW_SETTING = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "no.digdir.camper.wallet.demo";
+				PRODUCT_BUNDLE_IDENTIFIER = no.digdir.camper.wallet.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
