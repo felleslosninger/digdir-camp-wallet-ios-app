@@ -258,10 +258,29 @@ enum ZKProbe {
       }
       let elapsed = ProcessInfo.processInfo.systemUptime - started
 
-      if let zkDoc = resp.deviceResponse.zkDocuments?.first {
-        print("\(tag) ✅✅ REAL ZK PROOF via presentation — \(zkDoc.proof.count) bytes in \(String(format: "%.2f", elapsed))s (zkpDocIds=\(resp.zkpDocumentIds))")
-      } else {
+      guard let zkDoc = resp.deviceResponse.zkDocuments?.first else {
         print("\(tag) ⚠️ no zkDocuments produced — documentIds=\(resp.documentIds), zkpDocIds=\(resp.zkpDocumentIds)")
+        return
+      }
+      print("\(tag) ✅✅ REAL ZK PROOF via presentation — \(zkDoc.proof.count) bytes in \(String(format: "%.2f", elapsed))s (zkpDocIds=\(resp.zkpDocumentIds))")
+
+      // Export exactly what Google's longfellow-zk verifier-service /zkverify expects:
+      //   { "Transcript": <base64 transcript bytes>, "ZKDeviceResponseCBOR": <base64 DeviceResponse CBOR> }
+      // Both are Go []byte fields (base64 in JSON). The transcript MUST be the identical
+      // bytes the prover used — transformDeviceResponseWithZkp encodes it as
+      // `sessionTranscript.encode(...)`, so we mirror that here.
+      let transcriptBytes = Data(sessionTranscript.encode(options: CBOROptions()))
+      let deviceResponseCBOR = Data(resp.deviceResponse.toCBOR(options: CBOROptions()).encode())
+      let payload: [String: String] = [
+        "Transcript": transcriptBytes.base64EncodedString(),
+        "ZKDeviceResponseCBOR": deviceResponseCBOR.base64EncodedString()
+      ]
+      if let json = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]) {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let url = docs.appendingPathComponent("zkverify-post.json")
+        try? json.write(to: url)
+        print("\(tag) 📤 wrote /zkverify body (\(json.count) B) → \(url.path)")
+        print("\(tag)    Transcript=\(transcriptBytes.count) B, ZKDeviceResponseCBOR=\(deviceResponseCBOR.count) B")
       }
     } catch {
       print("\(tag) ❌ presentation prove failed: \(error)")
