@@ -13,7 +13,6 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
 import SwiftUI
 import logic_ui
 import logic_resources
@@ -32,19 +31,15 @@ struct IssuerNotificationDetailView: View {
         Image(systemName: "bell.badge.fill")
           .foregroundStyle(Theme.shared.color.accent)
           .font(.system(size: 24))
-
         VStack(alignment: .leading, spacing: 2) {
           Text(notification.issuerName)
             .typography(Theme.shared.font.titleMedium)
             .foregroundStyle(Theme.shared.color.primaryLabel)
-
           Text(notification.receivedAt, style: .date)
             .typography(Theme.shared.font.bodySmall)
             .foregroundStyle(Theme.shared.color.secondaryLabel)
         }
-
         Spacer()
-
         Label(notification.trustStatus.title, systemImage: notification.trustStatus.icon)
           .font(.caption)
           .bold()
@@ -75,6 +70,19 @@ struct IssuerNotificationDetailView: View {
             .foregroundStyle(Theme.shared.color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+      }
+
+      Button {
+        onDismiss()
+      } label: {
+        Text("Slett melding")
+          .typography(Theme.shared.font.bodyLarge)
+          .fontWeight(.medium)
+          .frame(maxWidth: .infinity)
+          .padding(SPACING_MEDIUM)
+          .background(Theme.shared.color.secondaryBackground)
+          .foregroundStyle(Theme.shared.color.primaryLabel)
+          .clipShape(RoundedRectangle(cornerRadius: 12))
       }
     }
     .padding(SPACING_LARGE)

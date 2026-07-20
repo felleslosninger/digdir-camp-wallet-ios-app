@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 European Commissxion
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -31,9 +31,8 @@ public enum InboxMessageFetcher {
   // Replace with your Mac's local IP when testing on a physical device.
   // Port 3001, NOT 3000 — the separate `digdir-wallet-messaging-backend`
   // prototype (used by MessagingBackend.swift / InboxTabViewModel.swift)
-  // already runs on 3000. See server/.env.example. 
-
-  private static let baseURL = URL(string: "https://analyzed-genetics-adam-pencil.trycloudflare.com")!
+  // already runs on 3000. See server/.env.example.
+  private static let baseURL = URL(string: "http://10.170.205.1:3001")!
 
   public enum FetchError: Error {
     case notActivated

@@ -20,7 +20,7 @@ enum MessagingBackend {
 
   // Replace with your Mac's local IP when testing on a physical device.
   // Find it: System Settings → Network → Wi-Fi → Details → IP Address
-  private static let baseURL = URL(string: "https://analyzed-genetics-adam-pencil.trycloudflare.com")!
+  private static let baseURL = URL(string: "http://10.170.205.1:3000")!
 
   private static let storageKey = "issuer_notifications"
   private static let lastFetchKey = "issuer_notifications_last_fetch"
