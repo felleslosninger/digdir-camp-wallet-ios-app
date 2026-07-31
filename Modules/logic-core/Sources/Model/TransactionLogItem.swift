@@ -13,7 +13,17 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+import Foundation
+
 public struct TransactionLogItem: Sendable {
   public let id: String
   public let transactionLogData: TransactionLogData
+  /// Raw DCQL request bytes (JSON-encoded), present for OpenID4VP presentations.
+  public let rawRequest: Data?
+
+  public init(id: String, transactionLogData: TransactionLogData, rawRequest: Data? = nil) {
+    self.id = id
+    self.transactionLogData = transactionLogData
+    self.rawRequest = rawRequest
+  }
 }

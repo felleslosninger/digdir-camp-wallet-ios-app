@@ -170,11 +170,7 @@ final class ImageManager: ImageManagerProtocol {
     Image(ImageEnum.touchId.rawValue, bundle: bundle)
   }
   var logo: Image {
-      let variant = Bundle.main.object(forInfoDictionaryKey: "Build Variant") as? String
-      if variant == "DEV" {
-          return Image(ImageEnum.logoDev.rawValue, bundle: bundle)
-      }
-      return Image(ImageEnum.logo.rawValue, bundle: bundle)
+    Image(ImageEnum.loadedHotDog.rawValue, bundle: bundle)
   }
   var arrowLeft: Image {
     Image(systemName: ImageEnum.arrowLeft.rawValue)
@@ -301,11 +297,7 @@ final class ImageManager: ImageManagerProtocol {
     Image(systemName: ImageEnum.docFill.rawValue)
   }
   var logoEuDigitalIndentityWallet: Image {
-      let variant = Bundle.main.object(forInfoDictionaryKey: "Build Variant") as? String
-      if variant == "DEV" {
-          return Image(ImageEnum.logoEuDigitalIndentityWalletDev.rawValue, bundle: bundle)
-      }
-      return Image(ImageEnum.logoEuDigitalIndentityWallet.rawValue, bundle: bundle)
+    Image(ImageEnum.loadedHotDog.rawValue, bundle: bundle)
   }
   var homeContract: Image {
     Image(ImageEnum.homeContract.rawValue, bundle: bundle)

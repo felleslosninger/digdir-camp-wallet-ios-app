@@ -51,6 +51,17 @@ public struct TransactionCardView: View {
                 ).foregroundStyle(Theme.shared.color.success)
               }
           }
+          if let claimed = transactionDetailsCardData.claimedVerifierName {
+            HStack(alignment: .top, spacing: SPACING_EXTRA_SMALL) {
+              Image(systemName: "exclamationmark.triangle")
+                .font(.caption2)
+                .foregroundStyle(Theme.shared.color.secondaryLabel)
+              Text("Uverifisert: \(claimed)")
+                .typography(Theme.shared.font.labelSmall)
+                .foregroundStyle(Theme.shared.color.secondaryLabel)
+                .lineLimit(2)
+            }
+          }
         }
 
         HStack {

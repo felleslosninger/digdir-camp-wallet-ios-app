@@ -85,11 +85,14 @@ extension TransactionLogItem {
     }
 
     var items: [GenericListItemSection] {
-      return switch self.transactionLogData {
+      switch self.transactionLogData {
       case .presentation(let log):
-        log.documents.transformToTransactionListItemSections()
+        if !log.documents.isEmpty {
+          return log.documents.transformToTransactionListItemSections()
+        }
+        return rawRequest?.zkClaimSections() ?? []
       case .issuance, .signing, .deletion:
-        []
+        return []
       }
     }
 
@@ -101,7 +104,8 @@ extension TransactionLogItem {
         transactionIsCompleted: transactionStatus == .completed,
         transactionDate: transactionDateLabel,
         relyingPartyName: .custom(relyingPartyData?.name ?? ""),
-        relyingPartyIsVerified: relyingPartyData?.isVerified
+        relyingPartyIsVerified: relyingPartyData?.isVerified,
+        claimedVerifierName: rawRequest?.extractClientId()
       ),
       items: items
     )
@@ -125,5 +129,54 @@ extension DocClaimsDecodable {
 extension Array where Element == DocClaimsModel {
   func transformToTransactionListItemSections() -> [GenericListItemSection] {
     return self.map { $0.transformToTransactionListItemSection() }
+  }
+}
+
+private extension Data {
+  /// Extracts the DCQL credentials array from rawRequest, handling both
+  /// the old format (bare DCQL JSON) and the new wrapper { dcql: {...}, clientId: "..." }.
+  private func dcqlCredentials() -> [[String: Any]]? {
+    guard let json = try? JSONSerialization.jsonObject(with: self) as? [String: Any] else { return nil }
+    if let wrapped = json["dcql"] as? [String: Any] {
+      return wrapped["credentials"] as? [[String: Any]]
+    }
+    return json["credentials"] as? [[String: Any]]
+  }
+
+  /// Extracts the self-reported client_id URL, stripping the redirect_uri prefix(es).
+  func extractClientId() -> String? {
+    guard
+      let json = try? JSONSerialization.jsonObject(with: self) as? [String: Any],
+      var raw = json["clientId"] as? String
+    else { return nil }
+    for prefix in ["redirect_uri:redirect_uri:", "redirect_uri:"] {
+      if raw.hasPrefix(prefix) { raw = String(raw.dropFirst(prefix.count)); break }
+    }
+    return raw.isEmpty ? nil : raw
+  }
+
+  /// Parses DCQL request bytes into DATA SHARED display sections.
+  /// Used as fallback when a ZK proof response has no decoded claims.
+  func zkClaimSections() -> [GenericListItemSection] {
+    guard let credentials = dcqlCredentials() else { return [] }
+
+    return credentials.compactMap { cred in
+      let credId = cred["id"] as? String ?? UUID().uuidString
+      let meta = cred["meta"] as? [String: Any]
+      let docType = meta?["doctype_value"] as? String ?? credId
+      let rawClaims = cred["claims"] as? [[String: Any]] ?? []
+
+      let listItems: [GenericExpandableItem] = rawClaims.compactMap { claim in
+        guard let path = claim["path"] as? [String], let attrName = path.last else { return nil }
+        let displayName = attrName.replacingOccurrences(of: "_", with: " ")
+        return .single(.init(
+          collapsed: ListItemData(mainContent: .text(.custom(displayName))),
+          domainModel: nil
+        ))
+      }
+
+      guard !listItems.isEmpty else { return nil }
+      return GenericListItemSection(id: credId, title: docType, listItems: listItems)
+    }
   }
 }

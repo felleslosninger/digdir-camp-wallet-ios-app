@@ -27,6 +27,6 @@ extension logic_storage.TransactionLog {
     else {
       throw WalletCoreError.unableToFetchTransactionLog
     }
-    return .init(id: id, transactionLogData: parse(coreLog))
+    return .init(id: id, transactionLogData: parse(coreLog), rawRequest: coreLog.rawRequest)
   }
 }

@@ -28,6 +28,8 @@ public struct TransactionDetailsCardData: Equatable, Identifiable, Sendable {
   public let transactionDate: LocalizableStringKey
   public let relyingPartyName: LocalizableStringKey?
   public let relyingPartyIsVerified: Bool?
+  /// Self-reported verifier URL/name for unverified (redirect_uri) presentations.
+  public let claimedVerifierName: String?
 
   init(
     id: String = UUID().uuidString,
@@ -36,7 +38,8 @@ public struct TransactionDetailsCardData: Equatable, Identifiable, Sendable {
     transactionIsCompleted: Bool,
     transactionDate: LocalizableStringKey,
     relyingPartyName: LocalizableStringKey? = nil,
-    relyingPartyIsVerified: Bool? = false
+    relyingPartyIsVerified: Bool? = false,
+    claimedVerifierName: String? = nil
   ) {
     self.id = id
     self.transactionTypeLabel = transactionTypeLabel
@@ -45,6 +48,7 @@ public struct TransactionDetailsCardData: Equatable, Identifiable, Sendable {
     self.transactionDate = transactionDate
     self.relyingPartyName = relyingPartyName
     self.relyingPartyIsVerified = relyingPartyIsVerified
+    self.claimedVerifierName = claimedVerifierName
   }
 }
 
